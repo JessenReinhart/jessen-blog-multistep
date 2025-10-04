@@ -27,9 +27,9 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
           Please review your blog post details below. You can edit any section by clicking the &quot;Edit&quot; button.
         </Typography>
       </div>
-      
+
       <div className="space-y-4">
-        {/* Blog Metadata */}
+
         <Card variant="outlined">
           <CardHeader>
             <div className="flex justify-between items-center">
@@ -57,7 +57,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
           </CardContent>
         </Card>
 
-        {/* Blog Summary & Category */}
+
         <Card variant="outlined">
           <CardHeader>
             <div className="flex justify-between items-center">
@@ -85,7 +85,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
           </CardContent>
         </Card>
 
-        {/* Blog Content */}
+
         <Card variant="outlined">
           <CardHeader>
             <div className="flex justify-between items-center">
@@ -111,7 +111,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
           </CardContent>
         </Card>
 
-        {/* Publication Info */}
+
         <Card variant="elevated">
           <CardContent>
             <div className="text-center">

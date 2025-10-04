@@ -40,8 +40,7 @@ export default function EditBlogPage() {
 
     const handleComplete = (_data: WizardFormData) => {
         const id = params.id as string;
-        // The update is already handled by the wizard's submitForm
-        // Just navigate back to the post
+
         router.push(`/blog/${id}`);
     };
 

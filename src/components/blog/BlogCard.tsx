@@ -17,7 +17,6 @@ interface BlogCardProps {
 
 export const BlogCard: React.FC<BlogCardProps> = ({ post, onClick, onEdit, onDelete }) => {
   const formatDate = (date: Date) => {
-    // Use a consistent format that works the same on server and client
     return new Intl.DateTimeFormat('en-US', {
       year: 'numeric',
       month: 'long',
@@ -35,7 +34,6 @@ export const BlogCard: React.FC<BlogCardProps> = ({ post, onClick, onEdit, onDel
     return colors[category as keyof typeof colors] || 'bg-gray-100 text-gray-800';
   };
 
-  // Only make the card clickable if there are no edit/delete buttons
   const hasInteractiveElements = onEdit || onDelete;
 
   const { getVariants } = useAnimationConfig();

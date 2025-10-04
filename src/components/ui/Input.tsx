@@ -1,9 +1,15 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useAnimationConfig } from '../../hooks/useAnimationConfig';
+import { formInputVariants, fadeInOut } from '../../lib/animations';
 
 interface InputProps {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  onBlur?: (value: string) => void;
   error?: string;
   required?: boolean;
   placeholder?: string;
@@ -15,12 +21,15 @@ export const Input: React.FC<InputProps> = ({
   label,
   value,
   onChange,
+  onBlur,
   error,
   required = false,
   placeholder,
   type = 'text',
   id
 }) => {
+  const { getVariants } = useAnimationConfig();
+  const [isFocused, setIsFocused] = useState(false);
   const inputId = id || `input-${label.toLowerCase().replace(/\s+/g, '-')}`;
   
   const inputClasses = `
@@ -32,7 +41,11 @@ export const Input: React.FC<InputProps> = ({
   `.trim();
   
   return (
-    <div className="space-y-1">
+    <motion.div 
+      className="space-y-1"
+      variants={getVariants(formInputVariants)}
+      animate={error ? "error" : isFocused ? "focus" : "initial"}
+    >
       <label 
         htmlFor={inputId}
         className="block text-sm font-medium text-gray-700"
@@ -46,21 +59,34 @@ export const Input: React.FC<InputProps> = ({
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => {
+          setIsFocused(false);
+          if (onBlur) {
+            onBlur(value);
+          }
+        }}
         placeholder={placeholder}
         className={inputClasses}
         aria-invalid={error ? 'true' : 'false'}
         aria-describedby={error ? `${inputId}-error` : undefined}
       />
       
-      {error && (
-        <p 
-          id={`${inputId}-error`}
-          className="text-sm text-red-600"
-          role="alert"
-        >
-          {error}
-        </p>
-      )}
-    </div>
+      <AnimatePresence>
+        {error && (
+          <motion.p 
+            id={`${inputId}-error`}
+            className="text-sm text-red-600"
+            role="alert"
+            variants={getVariants(fadeInOut)}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+          >
+            {error}
+          </motion.p>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 };

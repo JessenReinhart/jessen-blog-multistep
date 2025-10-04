@@ -6,6 +6,7 @@ import { ContentStepProps } from '@/types/blog';
 export const ContentStep: React.FC<ContentStepProps> = ({
   data,
   onChange,
+  onBlur,
   errors
 }) => {
   return (
@@ -24,6 +25,7 @@ export const ContentStep: React.FC<ContentStepProps> = ({
           label="Blog Content"
           value={data.content}
           onChange={(value) => onChange('content', value)}
+          onBlur={(value) => onBlur('content', value)}
           error={errors.content}
           required
           placeholder="Write your blog post content here..."

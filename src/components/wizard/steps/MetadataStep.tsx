@@ -6,6 +6,7 @@ import { MetadataStepProps } from '@/types/blog';
 export const MetadataStep: React.FC<MetadataStepProps> = ({
   data,
   onChange,
+  onBlur,
   errors
 }) => {
   return (
@@ -24,6 +25,7 @@ export const MetadataStep: React.FC<MetadataStepProps> = ({
           label="Blog Title"
           value={data.title}
           onChange={(value) => onChange('title', value)}
+          onBlur={(value) => onBlur('title', value)}
           error={errors.title}
           required
           placeholder="Enter your blog post title"
@@ -34,6 +36,7 @@ export const MetadataStep: React.FC<MetadataStepProps> = ({
           label="Author Name"
           value={data.author}
           onChange={(value) => onChange('author', value)}
+          onBlur={(value) => onBlur('author', value)}
           error={errors.author}
           required
           placeholder="Enter the author's name"

@@ -1,5 +1,9 @@
+'use client';
+
 import React, { useState, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useWizardForm } from '../../hooks/useWizardForm';
+import { useAnimationConfig } from '../../hooks/useAnimationConfig';
 import { WizardStep } from './WizardStep';
 import { WizardNavigation } from './WizardNavigation';
 import { MetadataStep } from './steps/MetadataStep';
@@ -7,6 +11,7 @@ import { SummaryStep } from './steps/SummaryStep';
 import { ContentStep } from './steps/ContentStep';
 import { ReviewStep } from './steps/ReviewStep';
 import { WizardContainerProps } from '../../types/blog';
+import { stepTransitions, successVariants } from '../../lib/animations';
 
 export const WizardContainer = ({
   onComplete,
@@ -19,6 +24,7 @@ export const WizardContainer = ({
     steps,
     errors,
     updateField,
+    validateFieldOnBlur,
     nextStep,
     prevStep,
     goToStep,
@@ -29,8 +35,10 @@ export const WizardContainer = ({
     resetForm
   } = useWizardForm(initialData, postId);
 
+  const { getVariants } = useAnimationConfig();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [direction, setDirection] = useState(0);
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
@@ -42,6 +50,21 @@ export const WizardContainer = ({
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleNext = () => {
+    setDirection(1);
+    nextStep();
+  };
+
+  const handlePrev = () => {
+    setDirection(-1);
+    prevStep();
+  };
+
+  const handleGoToStep = (step: number) => {
+    setDirection(step > currentStep ? 1 : -1);
+    goToStep(step);
   };
 
   useEffect(() => {
@@ -72,6 +95,7 @@ export const WizardContainer = ({
           <MetadataStep
             data={{ title: data.title, author: data.author }}
             onChange={updateField}
+            onBlur={validateFieldOnBlur}
             errors={errors}
           />
         );
@@ -80,6 +104,7 @@ export const WizardContainer = ({
           <SummaryStep
             data={{ summary: data.summary, category: data.category }}
             onChange={updateField}
+            onBlur={validateFieldOnBlur}
             errors={errors}
           />
         );
@@ -88,6 +113,7 @@ export const WizardContainer = ({
           <ContentStep
             data={{ content: data.content }}
             onChange={updateField}
+            onBlur={validateFieldOnBlur}
             errors={errors}
           />
         );
@@ -106,13 +132,23 @@ export const WizardContainer = ({
   if (submitSuccess) {
     const isEditing = !!initialData;
     return (
-      <div className="max-w-2xl mx-auto text-center py-12">
+      <motion.div 
+        className="max-w-2xl mx-auto text-center py-12"
+        variants={getVariants(successVariants)}
+        initial="initial"
+        animate="animate"
+      >
         <div className="bg-green-50 border border-green-200 rounded-lg p-8">
-          <div className="flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mx-auto mb-4">
+          <motion.div 
+            className="flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mx-auto mb-4"
+            variants={getVariants(successVariants)}
+            initial="initial"
+            animate="animate"
+          >
             <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
-          </div>
+          </motion.div>
           <h2 className="text-2xl font-bold text-green-900 mb-2">
             Blog Post {isEditing ? 'Updated' : 'Created'} Successfully!
           </h2>
@@ -123,26 +159,37 @@ export const WizardContainer = ({
             Redirecting in a moment...
           </p>
         </div>
-      </div>
+      </motion.div>
     );
   }
 
   return (
     <div className="max-w-4xl mx-auto">
-      <WizardStep
-        title={currentStepData.title}
-        isValid={currentStepData.isValid}
-      >
-        {renderCurrentStep()}
-      </WizardStep>
+      <AnimatePresence mode="wait" custom={direction}>
+        <motion.div
+          key={currentStep}
+          custom={direction}
+          variants={getVariants(stepTransitions)}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+        >
+          <WizardStep
+            title={currentStepData.title}
+            isValid={currentStepData.isValid}
+          >
+            {renderCurrentStep()}
+          </WizardStep>
+        </motion.div>
+      </AnimatePresence>
 
       <WizardNavigation
         currentStep={currentStep}
         totalSteps={steps.length}
         canGoNext={canGoNext && !isSubmitting}
         canGoBack={canGoBack && !isSubmitting}
-        onNext={nextStep}
-        onBack={prevStep}
+        onNext={handleNext}
+        onBack={handlePrev}
         onSubmit={handleSubmit}
         isLastStep={isLastStep}
       />

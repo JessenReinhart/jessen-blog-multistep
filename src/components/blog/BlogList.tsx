@@ -1,7 +1,12 @@
+'use client';
+
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { BlogCard } from './BlogCard';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { useBlogStorage } from '../../hooks/useBlogStorage';
+import { useAnimationConfig } from '../../hooks/useAnimationConfig';
+import { staggerContainer } from '../../lib/animations';
 
 interface BlogListProps {
   onPostClick: (id: string) => void;
@@ -10,6 +15,7 @@ interface BlogListProps {
 
 export const BlogList: React.FC<BlogListProps> = ({ onPostClick, onPostEdit }) => {
   const { posts, isStorageAvailable, deletePost } = useBlogStorage();
+  const { getVariants } = useAnimationConfig();
   const [deleteDialog, setDeleteDialog] = useState<{ isOpen: boolean; postId: string; postTitle: string }>({
     isOpen: false,
     postId: '',
@@ -78,7 +84,12 @@ export const BlogList: React.FC<BlogListProps> = ({ onPostClick, onPostEdit }) =
         </h2>
       </div>
       
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <motion.div 
+        className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
+        variants={getVariants(staggerContainer)}
+        initial="initial"
+        animate="animate"
+      >
         {sortedPosts.map((post) => (
           <BlogCard
             key={post.id}
@@ -88,7 +99,7 @@ export const BlogList: React.FC<BlogListProps> = ({ onPostClick, onPostEdit }) =
             onDelete={handleDelete}
           />
         ))}
-      </div>
+      </motion.div>
       
       <ConfirmDialog
         isOpen={deleteDialog.isOpen}

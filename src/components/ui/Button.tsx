@@ -1,4 +1,9 @@
+'use client';
+
 import React from 'react';
+import { motion } from 'framer-motion';
+import { useAnimationConfig } from '../../hooks/useAnimationConfig';
+import { buttonVariants } from '../../lib/animations/variants';
 
 interface ButtonProps {
   variant?: 'primary' | 'secondary' | 'outline' | 'danger';
@@ -17,7 +22,8 @@ export const Button = ({
   children,
   type = 'button'
 }: ButtonProps) => {
-  const baseClasses = 'font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 inline-flex items-center justify-center cursor-pointer';
+  const { getVariants } = useAnimationConfig();
+  const baseClasses = 'font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 inline-flex items-center justify-center cursor-pointer';
 
   const variantClasses = {
     primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 disabled:bg-blue-300 disabled:cursor-not-allowed',
@@ -35,13 +41,17 @@ export const Button = ({
   const classes = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]}`;
 
   return (
-    <button
+    <motion.button
       type={type}
       className={classes}
       onClick={onClick}
       disabled={disabled}
+      variants={getVariants(buttonVariants)}
+      initial="initial"
+      whileHover={disabled ? undefined : "hover"}
+      whileTap={disabled ? undefined : "tap"}
     >
       {children}
-    </button>
+    </motion.button>
   );
 };

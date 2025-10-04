@@ -1,7 +1,12 @@
+'use client';
+
 import React from 'react';
+import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { BlogPost } from '../../types/blog';
+import { useAnimationConfig } from '../../hooks/useAnimationConfig';
+import { staggerItem } from '../../lib/animations';
 
 interface BlogCardProps {
   post: BlogPost;
@@ -33,13 +38,21 @@ export const BlogCard: React.FC<BlogCardProps> = ({ post, onClick, onEdit, onDel
   // Only make the card clickable if there are no edit/delete buttons
   const hasInteractiveElements = onEdit || onDelete;
 
+  const { getVariants } = useAnimationConfig();
+
   return (
-    <Card
-      variant="outlined"
-      hover={!hasInteractiveElements}
-      onClick={!hasInteractiveElements ? () => onClick(post.id) : undefined}
+    <motion.div
+      variants={getVariants(staggerItem)}
+      initial="initial"
+      animate="animate"
       className="h-full"
     >
+      <Card
+        variant="outlined"
+        hover={!hasInteractiveElements}
+        onClick={!hasInteractiveElements ? () => onClick(post.id) : undefined}
+        className="h-full"
+      >
       <CardHeader>
         <div 
           className={`relative mb-2 ${hasInteractiveElements ? 'cursor-pointer' : ''}`}
@@ -104,5 +117,6 @@ export const BlogCard: React.FC<BlogCardProps> = ({ post, onClick, onEdit, onDel
         </div>
       </CardContent>
     </Card>
+    </motion.div>
   );
 };

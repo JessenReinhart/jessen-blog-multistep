@@ -13,6 +13,7 @@ const categoryOptions = [
 export const SummaryStep: React.FC<SummaryStepProps> = ({
   data,
   onChange,
+  onBlur,
   errors
 }) => {
   return (
@@ -31,6 +32,7 @@ export const SummaryStep: React.FC<SummaryStepProps> = ({
           label="Blog Summary"
           value={data.summary}
           onChange={(value) => onChange('summary', value)}
+          onBlur={(value) => onBlur('summary', value)}
           error={errors.summary}
           required
           placeholder="Write a brief summary of your blog post"
@@ -41,6 +43,7 @@ export const SummaryStep: React.FC<SummaryStepProps> = ({
           label="Blog Category"
           value={data.category}
           onChange={(value) => onChange('category', value as BlogCategory)}
+          onBlur={(value) => onBlur('category', value as BlogCategory)}
           options={categoryOptions}
           error={errors.category}
           required

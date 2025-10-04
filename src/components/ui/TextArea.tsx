@@ -1,9 +1,15 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useAnimationConfig } from '../../hooks/useAnimationConfig';
+import { formInputVariants, fadeInOut } from '../../lib/animations';
 
 interface TextAreaProps {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  onBlur?: (value: string) => void;
   error?: string;
   required?: boolean;
   placeholder?: string;
@@ -18,6 +24,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
   label,
   value,
   onChange,
+  onBlur,
   error,
   required = false,
   placeholder,
@@ -27,6 +34,8 @@ export const TextArea: React.FC<TextAreaProps> = ({
   resize = 'vertical',
   id
 }) => {
+  const { getVariants } = useAnimationConfig();
+  const [isFocused, setIsFocused] = useState(false);
   const textAreaId = id || `textarea-${label.toLowerCase().replace(/\s+/g, '-')}`;
   
   const textAreaClasses = `
@@ -41,7 +50,11 @@ export const TextArea: React.FC<TextAreaProps> = ({
   `.trim();
   
   return (
-    <div className="space-y-1">
+    <motion.div 
+      className="space-y-1"
+      variants={getVariants(formInputVariants)}
+      animate={error ? "error" : isFocused ? "focus" : "initial"}
+    >
       <label 
         htmlFor={textAreaId}
         className="block text-sm font-medium text-gray-700"
@@ -54,6 +67,13 @@ export const TextArea: React.FC<TextAreaProps> = ({
         id={textAreaId}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => {
+          setIsFocused(false);
+          if (onBlur) {
+            onBlur(value);
+          }
+        }}
         placeholder={placeholder}
         rows={rows}
         maxLength={maxLength}
@@ -68,15 +88,21 @@ export const TextArea: React.FC<TextAreaProps> = ({
         </div>
       )}
       
-      {error && (
-        <p 
-          id={`${textAreaId}-error`}
-          className="text-sm text-red-600"
-          role="alert"
-        >
-          {error}
-        </p>
-      )}
-    </div>
+      <AnimatePresence>
+        {error && (
+          <motion.p 
+            id={`${textAreaId}-error`}
+            className="text-sm text-red-600"
+            role="alert"
+            variants={getVariants(fadeInOut)}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+          >
+            {error}
+          </motion.p>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 };

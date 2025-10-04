@@ -132,103 +132,17 @@ export function validateAllFields(data: WizardFormData): Record<string, string> 
   return errors;
 }
 
-export function validateStep1(data: WizardFormData): boolean {
-  const titleError = validateTitle(data.title);
-  const authorError = validateAuthor(data.author);
-  
-  return !titleError && !authorError;
-}
-
-export function validateStep2(data: WizardFormData): boolean {
-  const summaryError = validateSummary(data.summary);
-  const categoryError = validateCategory(data.category);
-  
-  return !summaryError && !categoryError;
-}
-
-export function validateStep3(data: WizardFormData): boolean {
-  const contentError = validateContent(data.content);
-  
-  return !contentError;
-}
-
-export function validateStep4(data: WizardFormData): boolean {
-  return validateStep1(data) && validateStep2(data) && validateStep3(data);
-}
-
 export function validateStep(stepNumber: number, data: WizardFormData): boolean {
   switch (stepNumber) {
     case 1:
-      return validateStep1(data);
+      return !validateTitle(data.title) && !validateAuthor(data.author);
     case 2:
-      return validateStep2(data);
+      return !validateSummary(data.summary) && !validateCategory(data.category);
     case 3:
-      return validateStep3(data);
+      return !validateContent(data.content);
     case 4:
-      return validateStep4(data);
+      return validateStep(1, data) && validateStep(2, data) && validateStep(3, data);
     default:
       return false;
   }
-}
-
-export function getStepErrors(stepNumber: number, data: WizardFormData): Record<string, string> {
-  const errors: Record<string, string> = {};
-  
-  switch (stepNumber) {
-    case 1:
-      const titleError = validateTitle(data.title);
-      if (titleError) errors.title = titleError;
-      
-      const authorError = validateAuthor(data.author);
-      if (authorError) errors.author = authorError;
-      break;
-      
-    case 2:
-      const summaryError = validateSummary(data.summary);
-      if (summaryError) errors.summary = summaryError;
-      
-      const categoryError = validateCategory(data.category);
-      if (categoryError) errors.category = categoryError;
-      break;
-      
-    case 3:
-      const contentError = validateContent(data.content);
-      if (contentError) errors.content = contentError;
-      break;
-      
-    case 4:
-      return validateAllFields(data);
-      
-    default:
-      break;
-  }
-  
-  return errors;
-}
-
-export function isFormValid(data: WizardFormData): boolean {
-  const errors = validateAllFields(data);
-  return Object.keys(errors).length === 0;
-}
-
-export function getFieldDisplayName(field: keyof WizardFormData): string {
-  switch (field) {
-    case 'title':
-      return 'Blog Title';
-    case 'author':
-      return 'Author Name';
-    case 'summary':
-      return 'Blog Summary';
-    case 'category':
-      return 'Blog Category';
-    case 'content':
-      return 'Blog Content';
-    default:
-      return field;
-  }
-}
-
-export function formatErrorMessage(field: keyof WizardFormData, error: string): string {
-  const fieldName = getFieldDisplayName(field);
-  return `${fieldName}: ${error}`;
 }

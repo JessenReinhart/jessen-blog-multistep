@@ -1,4 +1,9 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useAnimationConfig } from '../../hooks/useAnimationConfig';
+import { formInputVariants, fadeInOut } from '../../lib/animations';
 
 interface SelectOption {
   value: string;
@@ -9,6 +14,7 @@ interface SelectProps {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  onBlur?: (value: string) => void;
   options: SelectOption[];
   error?: string;
   required?: boolean;
@@ -20,12 +26,15 @@ export const Select: React.FC<SelectProps> = ({
   label,
   value,
   onChange,
+  onBlur,
   options,
   error,
   required = false,
   placeholder = 'Select an option...',
   id
 }) => {
+  const { getVariants } = useAnimationConfig();
+  const [isFocused, setIsFocused] = useState(false);
   const selectId = id || `select-${label.toLowerCase().replace(/\s+/g, '-')}`;
   
   const selectClasses = `
@@ -37,7 +46,11 @@ export const Select: React.FC<SelectProps> = ({
   `.trim();
   
   return (
-    <div className="space-y-1">
+    <motion.div 
+      className="space-y-1"
+      variants={getVariants(formInputVariants)}
+      animate={error ? "error" : isFocused ? "focus" : "initial"}
+    >
       <label 
         htmlFor={selectId}
         className="block text-sm font-medium text-gray-700"
@@ -50,6 +63,13 @@ export const Select: React.FC<SelectProps> = ({
         id={selectId}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => {
+          setIsFocused(false);
+          if (onBlur) {
+            onBlur(value);
+          }
+        }}
         className={selectClasses}
         aria-invalid={error ? 'true' : 'false'}
         aria-describedby={error ? `${selectId}-error` : undefined}
@@ -64,15 +84,21 @@ export const Select: React.FC<SelectProps> = ({
         ))}
       </select>
       
-      {error && (
-        <p 
-          id={`${selectId}-error`}
-          className="text-sm text-red-600"
-          role="alert"
-        >
-          {error}
-        </p>
-      )}
-    </div>
+      <AnimatePresence>
+        {error && (
+          <motion.p 
+            id={`${selectId}-error`}
+            className="text-sm text-red-600"
+            role="alert"
+            variants={getVariants(fadeInOut)}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+          >
+            {error}
+          </motion.p>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 };

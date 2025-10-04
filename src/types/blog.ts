@@ -37,6 +37,7 @@ export interface InputProps {
     label: string;
     value: string;
     onChange: (value: string) => void;
+    onBlur?: (value: string) => void;
     error?: string;
     required?: boolean;
     placeholder?: string;
@@ -46,6 +47,7 @@ export interface TextAreaProps {
     label: string;
     value: string;
     onChange: (value: string) => void;
+    onBlur?: (value: string) => void;
     error?: string;
     required?: boolean;
     placeholder?: string;
@@ -56,6 +58,7 @@ export interface SelectProps {
     label: string;
     value: string;
     onChange: (value: string) => void;
+    onBlur?: (value: string) => void;
     options: Array<{ value: string; label: string }>;
     error?: string;
     required?: boolean;
@@ -93,18 +96,21 @@ export interface WizardNavigationProps {
 export interface MetadataStepProps {
     data: Pick<WizardFormData, 'title' | 'author'>;
     onChange: (field: keyof WizardFormData, value: string) => void;
+    onBlur: (field: keyof WizardFormData, value: string) => string;
     errors: Record<string, string>;
 }
 
 export interface SummaryStepProps {
     data: Pick<WizardFormData, 'summary' | 'category'>;
     onChange: (field: keyof WizardFormData, value: string) => void;
+    onBlur: (field: keyof WizardFormData, value: string) => string;
     errors: Record<string, string>;
 }
 
 export interface ContentStepProps {
     data: Pick<WizardFormData, 'content'>;
     onChange: (field: keyof WizardFormData, value: string) => void;
+    onBlur: (field: keyof WizardFormData, value: string) => string;
     errors: Record<string, string>;
 }
 
@@ -143,12 +149,7 @@ export interface UseBlogStorageReturn {
     isStorageAvailable: boolean;
 }
 
-export interface UseFormValidationReturn {
-    errors: Record<string, string>;
-    validateField: (field: keyof WizardFormData, value: string) => string;
-    validateStep: (step: number, data: WizardFormData) => boolean;
-    clearErrors: () => void;
-}
+
 
 export interface UseWizardFormReturn {
     data: WizardFormData;
@@ -156,6 +157,7 @@ export interface UseWizardFormReturn {
     steps: WizardStep[];
     errors: Record<string, string>;
     updateField: (field: keyof WizardFormData, value: string) => void;
+    validateFieldOnBlur: (field: keyof WizardFormData, value: string) => string;
     nextStep: () => void;
     prevStep: () => void;
     goToStep: (step: number) => void;

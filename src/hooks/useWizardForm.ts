@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
 import { WizardFormData, WizardStep, UseWizardFormReturn, BlogCategory } from '@/types/blog';
-import { useFormValidation } from './useFormValidation';
+import { validateField, validateStep } from '@/utils/validation';
 import { useBlogStorage } from './useBlogStorage';
 
 const INITIAL_FORM_DATA: WizardFormData = {
@@ -25,17 +25,28 @@ export function useWizardForm(initialData?: Partial<WizardFormData>, postId?: st
     }));
     const [currentStep, setCurrentStep] = useState(1);
     const [steps, setSteps] = useState(WIZARD_STEPS);
+    const [errors, setErrors] = useState<Record<string, string>>({});
 
-    const { errors, validateField, validateStep, clearErrors } = useFormValidation();
     const { createPost, updatePost } = useBlogStorage();
 
     const updateField = useCallback((field: keyof WizardFormData, value: string) => {
         setData(prevData => {
             const newData = { ...prevData, [field]: value };
-            validateField(field, value);
+            if (errors[field]) {
+                const error = validateField(field, value);
+                setErrors(prev => {
+                    const newErrors = { ...prev };
+                    if (error) {
+                        newErrors[field] = error;
+                    } else {
+                        delete newErrors[field];
+                    }
+                    return newErrors;
+                });
+            }
             return newData;
         });
-    }, [validateField]);
+    }, [errors]);
 
     const updateStepCompletion = useCallback((stepNumber: number, formData: WizardFormData) => {
         const isStepValid = validateStep(stepNumber, formData);
@@ -49,7 +60,7 @@ export function useWizardForm(initialData?: Partial<WizardFormData>, postId?: st
         );
 
         return isStepValid;
-    }, [validateStep]);
+    }, []);
 
     const nextStep = useCallback(() => {
         const isCurrentStepValid = updateStepCompletion(currentStep, data);
@@ -69,7 +80,7 @@ export function useWizardForm(initialData?: Partial<WizardFormData>, postId?: st
         if (step >= 1 && step <= WIZARD_STEPS.length) {
             let canNavigate = true;
             for (let i = 1; i < step; i++) {
-                if (!updateStepCompletion(i, data)) {
+                if (!validateStep(i, data)) {
                     canNavigate = false;
                     break;
                 }
@@ -79,11 +90,11 @@ export function useWizardForm(initialData?: Partial<WizardFormData>, postId?: st
                 setCurrentStep(step);
             }
         }
-    }, [data, updateStepCompletion]);
+    }, [data]);
 
     const submitForm = useCallback(() => {
         const allStepsValid = WIZARD_STEPS.every((_, index) =>
-            updateStepCompletion(index + 1, data)
+            validateStep(index + 1, data)
         );
 
         if (!allStepsValid) {
@@ -97,17 +108,16 @@ export function useWizardForm(initialData?: Partial<WizardFormData>, postId?: st
                 throw new Error('Failed to save post');
             }
 
-            clearErrors();
+            setErrors({});
             return typeof result === 'string' ? result : postId;
         } catch (error) {
             console.error('Error submitting form:', error);
             throw error;
         }
-    }, [data, createPost, updatePost, postId, clearErrors, updateStepCompletion]);
+    }, [data, createPost, updatePost, postId]);
     const canGoNext = useMemo(() => 
-        updateStepCompletion(currentStep, data), 
-        [currentStep, data, updateStepCompletion]
-    );
+        validateStep(currentStep, data), 
+        [currentStep, data]);
 
     const canGoBack = useMemo(() => 
         currentStep > 1, 
@@ -123,8 +133,22 @@ export function useWizardForm(initialData?: Partial<WizardFormData>, postId?: st
         setData(INITIAL_FORM_DATA);
         setCurrentStep(1);
         setSteps(WIZARD_STEPS);
-        clearErrors();
-    }, [clearErrors]);
+        setErrors({});
+    }, []);
+
+    const validateFieldOnBlurHandler = useCallback((field: keyof WizardFormData, value: string) => {
+        const error = validateField(field, value);
+        setErrors(prev => {
+            const newErrors = { ...prev };
+            if (error) {
+                newErrors[field] = error;
+            } else {
+                delete newErrors[field];
+            }
+            return newErrors;
+        });
+        return error;
+    }, []);
 
     return {
         data,
@@ -132,6 +156,7 @@ export function useWizardForm(initialData?: Partial<WizardFormData>, postId?: st
         steps,
         errors,
         updateField,
+        validateFieldOnBlur: validateFieldOnBlurHandler,
         nextStep,
         prevStep,
         goToStep,

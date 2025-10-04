@@ -1,4 +1,9 @@
+'use client';
+
 import React from 'react';
+import { motion } from 'framer-motion';
+import { useAnimationConfig } from '../../hooks/useAnimationConfig';
+import { fadeInOut } from '../../lib/animations';
 
 interface CardProps {
   children: React.ReactNode;
@@ -9,6 +14,12 @@ interface CardProps {
   hover?: boolean;
 }
 
+const cardHoverVariants = {
+  initial: { scale: 1, y: 0 },
+  animate: { scale: 1, y: 0 },
+  hover: { scale: 1.02, y: -2 },
+  tap: { scale: 0.98 },
+};
 export const Card: React.FC<CardProps> = ({
   children,
   variant = 'default',
@@ -17,11 +28,12 @@ export const Card: React.FC<CardProps> = ({
   onClick,
   hover = false
 }) => {
-  const baseClasses = 'rounded-lg transition-all duration-200';
+  const { getVariants } = useAnimationConfig();
+  const baseClasses = 'rounded-lg';
   
   const variantClasses = {
     default: 'bg-white border border-gray-200',
-    elevated: 'bg-white shadow-md hover:shadow-lg',
+    elevated: 'bg-white shadow-md',
     outlined: 'bg-white border-2 border-gray-300',
     minimal: 'bg-transparent'
   };
@@ -34,27 +46,29 @@ export const Card: React.FC<CardProps> = ({
   };
   
   const interactiveClasses = onClick ? 'cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2' : '';
-  const hoverClasses = hover && onClick ? 'hover:bg-gray-50 hover:shadow-lg' : '';
   
   const classes = `
     ${baseClasses} 
     ${variantClasses[variant]} 
     ${paddingClasses[padding]} 
     ${interactiveClasses} 
-    ${hoverClasses} 
     ${className}
   `.trim();
   
-  const CardComponent = onClick ? 'button' : 'div';
+  const MotionComponent = motion(onClick ? 'button' : 'div');
   
   return (
-    <CardComponent
+    <MotionComponent
       className={classes}
       onClick={onClick}
       type={onClick ? 'button' : undefined}
-    >
+      variants={getVariants(onClick && hover ? cardHoverVariants : fadeInOut)}
+      initial="initial"
+      animate="animate"
+      whileHover={onClick && hover ? "hover" : undefined}
+      whileTap={onClick && hover ? "tap" : undefined}    >
       {children}
-    </CardComponent>
+    </MotionComponent>
   );
 };
 

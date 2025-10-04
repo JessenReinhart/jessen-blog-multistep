@@ -2,7 +2,6 @@ import React from 'react';
 import { WizardStepProps } from '../../types/blog';
 
 export const WizardStep: React.FC<WizardStepProps> = ({
-  title,
   children,
   isValid
 }) => {

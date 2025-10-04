@@ -15,6 +15,10 @@ export default function Home() {
     router.push(`/blog/${id}`);
   };
 
+  const handlePostEdit = (id: string) => {
+    router.push(`/blog/${id}/edit`);
+  };
+
   return (
     <PageLayout>
       <ContentContainer>
@@ -28,7 +32,7 @@ export default function Home() {
             </Link>
           }
         />
-        <BlogList onPostClick={handlePostClick} />
+        <BlogList onPostClick={handlePostClick} onPostEdit={handlePostEdit} />
       </ContentContainer>
     </PageLayout>
   );

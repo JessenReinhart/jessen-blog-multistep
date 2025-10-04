@@ -69,6 +69,7 @@ export interface CardProps {
 
 export interface WizardContainerProps {
     onComplete: (data: WizardFormData) => void;
+    initialData?: Partial<WizardFormData>;
 }
 
 export interface WizardStepProps {
@@ -114,16 +115,21 @@ export interface ReviewStepProps {
 export interface BlogCardProps {
     post: BlogPost;
     onClick: (id: string) => void;
+    onEdit?: (id: string) => void;
+    onDelete?: (id: string) => void;
 }
 
 export interface BlogListProps {
     posts: BlogPost[];
     onPostClick: (id: string) => void;
+    onPostEdit?: (id: string) => void;
 }
 
 export interface BlogDetailProps {
     post: BlogPost;
     onBack: () => void;
+    onEdit?: () => void;
+    onDelete?: () => void;
 }
 
 export interface UseBlogStorageReturn {
@@ -131,6 +137,8 @@ export interface UseBlogStorageReturn {
     createPost: (data: WizardFormData) => string;
     getPost: (id: string) => BlogPost | undefined;
     getAllPosts: () => BlogPost[];
+    updatePost: (id: string, data: Partial<WizardFormData>) => boolean;
+    deletePost: (id: string) => boolean;
     isStorageAvailable: boolean;
 }
 

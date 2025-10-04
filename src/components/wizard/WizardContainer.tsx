@@ -9,7 +9,8 @@ import { ReviewStep } from './steps/ReviewStep';
 import { WizardContainerProps } from '../../types/blog';
 
 export const WizardContainer: React.FC<WizardContainerProps> = ({
-  onComplete
+  onComplete,
+  initialData
 }) => {
   const {
     data,
@@ -24,7 +25,7 @@ export const WizardContainer: React.FC<WizardContainerProps> = ({
     canGoBack,
     isLastStep,
     submitForm
-  } = useWizardForm();
+  } = useWizardForm(initialData);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
@@ -32,7 +33,7 @@ export const WizardContainer: React.FC<WizardContainerProps> = ({
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      const postId = submitForm();
+      submitForm();
       setSubmitSuccess(true);
     } catch (error) {
       console.error('Failed to submit form:', error);
@@ -46,7 +47,7 @@ export const WizardContainer: React.FC<WizardContainerProps> = ({
       const timer = setTimeout(() => {
         onComplete(data);
       }, 2000);
-      
+
       return () => clearTimeout(timer);
     }
   }, [submitSuccess, onComplete, data]);
@@ -104,6 +105,7 @@ export const WizardContainer: React.FC<WizardContainerProps> = ({
   };
 
   if (submitSuccess) {
+    const isEditing = !!initialData;
     return (
       <div className="max-w-2xl mx-auto text-center py-12">
         <div className="bg-green-50 border border-green-200 rounded-lg p-8">
@@ -113,13 +115,13 @@ export const WizardContainer: React.FC<WizardContainerProps> = ({
             </svg>
           </div>
           <h2 className="text-2xl font-bold text-green-900 mb-2">
-            Blog Post Created Successfully!
+            Blog Post {isEditing ? 'Updated' : 'Created'} Successfully!
           </h2>
           <p className="text-green-700 mb-6">
             Your blog post has been saved and is now available in your blog list.
           </p>
           <p className="text-green-600 text-sm">
-            Redirecting to blog list in a moment...
+            Redirecting in a moment...
           </p>
         </div>
       </div>
@@ -134,7 +136,7 @@ export const WizardContainer: React.FC<WizardContainerProps> = ({
       >
         {renderCurrentStep()}
       </WizardStep>
-      
+
       <WizardNavigation
         currentStep={currentStep}
         totalSteps={steps.length}

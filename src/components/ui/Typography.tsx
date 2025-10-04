@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { JSX } from 'react';
 
 interface TypographyProps {
   variant: 'h1' | 'h2' | 'h3' | 'body' | 'caption' | 'small';

@@ -18,8 +18,11 @@ const WIZARD_STEPS: WizardStep[] = [
     { id: 4, title: 'Review & Submit', isValid: false, isCompleted: false }
 ];
 
-export function useWizardForm(): UseWizardFormReturn {
-    const [data, setData] = useState<WizardFormData>(INITIAL_FORM_DATA);
+export function useWizardForm(initialData?: Partial<WizardFormData>): UseWizardFormReturn {
+    const [data, setData] = useState<WizardFormData>(() => ({
+        ...INITIAL_FORM_DATA,
+        ...initialData
+    }));
     const [currentStep, setCurrentStep] = useState<number>(1);
     const [steps, setSteps] = useState<WizardStep[]>(WIZARD_STEPS);
     

@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
-import "../styles/design-tokens.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,20 +38,6 @@ export default function RootLayout({
               >
                 Blog Wizard
               </Link>
-              <div className="flex space-x-4">
-                <Link
-                  href="/"
-                  className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
-                >
-                  Home
-                </Link>
-                <Link
-                  href="/create"
-                  className="bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-md text-sm font-medium transition-colors"
-                >
-                  Create Post
-                </Link>
-              </div>
             </div>
           </nav>
         </header>

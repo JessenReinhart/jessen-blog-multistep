@@ -1,13 +1,16 @@
 import React from 'react';
 import { Card, CardContent, CardHeader } from '../ui/Card';
+import { Button } from '../ui/Button';
 import { BlogPost } from '../../types/blog';
 
 interface BlogCardProps {
   post: BlogPost;
   onClick: (id: string) => void;
+  onEdit?: (id: string) => void;
+  onDelete?: (id: string) => void;
 }
 
-export const BlogCard: React.FC<BlogCardProps> = ({ post, onClick }) => {
+export const BlogCard: React.FC<BlogCardProps> = ({ post, onClick, onEdit, onDelete }) => {
   const formatDate = (date: Date) => {
     // Use a consistent format that works the same on server and client
     return new Intl.DateTimeFormat('en-US', {
@@ -27,15 +30,21 @@ export const BlogCard: React.FC<BlogCardProps> = ({ post, onClick }) => {
     return colors[category as keyof typeof colors] || 'bg-gray-100 text-gray-800';
   };
 
+  // Only make the card clickable if there are no edit/delete buttons
+  const hasInteractiveElements = onEdit || onDelete;
+
   return (
     <Card
       variant="outlined"
-      hover={true}
-      onClick={() => onClick(post.id)}
+      hover={!hasInteractiveElements}
+      onClick={!hasInteractiveElements ? () => onClick(post.id) : undefined}
       className="h-full"
     >
       <CardHeader>
-        <div className="relative mb-2">
+        <div 
+          className={`relative mb-2 ${hasInteractiveElements ? 'cursor-pointer' : ''}`}
+          onClick={hasInteractiveElements ? () => onClick(post.id) : undefined}
+        >
           <div className="text-center pr-16">
             <h3 className="text-lg font-semibold text-gray-900 line-clamp-2 text-center">
               {post.title}
@@ -45,18 +54,54 @@ export const BlogCard: React.FC<BlogCardProps> = ({ post, onClick }) => {
             {post.category}
           </span>
         </div>
-        <p className="text-sm text-gray-600 text-center">
+        <p 
+          className={`text-sm text-gray-600 text-center ${hasInteractiveElements ? 'cursor-pointer' : ''}`}
+          onClick={hasInteractiveElements ? () => onClick(post.id) : undefined}
+        >
           by {post.author}
         </p>
       </CardHeader>
 
       <CardContent>
-        <p className="text-gray-700 line-clamp-3 mb-3">
+        <p 
+          className={`text-gray-700 line-clamp-3 mb-3 ${hasInteractiveElements ? 'cursor-pointer' : ''}`}
+          onClick={hasInteractiveElements ? () => onClick(post.id) : undefined}
+        >
           {post.summary}
         </p>
-        <p className="text-xs text-gray-500">
-          {formatDate(post.createdAt)}
-        </p>
+        <div className="flex justify-between items-center">
+          <p className="text-xs text-gray-500">
+            {formatDate(post.createdAt)}
+          </p>
+          {(onEdit || onDelete) && (
+            <div className="flex gap-2">
+              {onEdit && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit(post.id);
+                  }}
+                >
+                  Edit
+                </Button>
+              )}
+              {onDelete && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(post.id);
+                  }}
+                >
+                  Delete
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
   );

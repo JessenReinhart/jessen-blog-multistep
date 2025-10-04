@@ -4,6 +4,8 @@ import {
     getAllBlogPosts,
     createBlogPost,
     getBlogPost,
+    updateBlogPost,
+    deleteBlogPost,
     isLocalStorageWorking
 } from '@/utils/storage';
 
@@ -49,11 +51,41 @@ export function useBlogStorage(): UseBlogStorageReturn {
         return posts;
     }, [posts]);
 
+    const updatePost = useCallback((id: string, data: Partial<WizardFormData>): boolean => {
+        try {
+            const success = updateBlogPost(id, data);
+            if (success) {
+                const updatedPosts = getAllBlogPosts();
+                setPosts(updatedPosts);
+            }
+            return success;
+        } catch (error) {
+            console.error('Error updating blog post:', error);
+            return false;
+        }
+    }, []);
+
+    const deletePost = useCallback((id: string): boolean => {
+        try {
+            const success = deleteBlogPost(id);
+            if (success) {
+                const updatedPosts = getAllBlogPosts();
+                setPosts(updatedPosts);
+            }
+            return success;
+        } catch (error) {
+            console.error('Error deleting blog post:', error);
+            return false;
+        }
+    }, []);
+
     return {
         posts,
         createPost,
         getPost,
         getAllPosts,
+        updatePost,
+        deletePost,
         isStorageAvailable
     };
 }

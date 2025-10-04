@@ -3,22 +3,19 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useBlogStorage } from "@/hooks/useBlogStorage";
-import { BlogPost } from "@/types/blog";
-import { Button } from "@/components/ui/Button";
-import { BlogDetail } from "@/components/blog/BlogDetail";
-import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { BlogPost, WizardFormData } from "@/types/blog";
+import { WizardContainer } from "@/components/wizard/WizardContainer";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { ContentContainer } from "@/components/layout/ContentContainer";
 import { PageHeader } from "@/components/layout/PageHeader";
 
-export default function BlogDetailPage() {
+export default function EditBlogPage() {
     const params = useParams();
     const router = useRouter();
-    const { getPost, deletePost } = useBlogStorage();
+    const { getPost, updatePost } = useBlogStorage();
     const [blogPost, setBlogPost] = useState<BlogPost | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
     useEffect(() => {
         const loadBlogPost = async () => {
@@ -41,33 +38,20 @@ export default function BlogDetailPage() {
         loadBlogPost();
     }, [params.id, getPost]);
 
-    const handleBackToList = () => {
-        router.push("/");
-    };
-
-    const handleEdit = () => {
+    const handleComplete = (data: WizardFormData) => {
         const id = params.id as string;
-        router.push(`/blog/${id}/edit`);
-    };
-
-    const handleDelete = () => {
-        setShowDeleteDialog(true);
-    };
-
-    const confirmDelete = () => {
-        const id = params.id as string;
-        const success = deletePost(id);
+        const success = updatePost(id, data);
         
         if (success) {
-            router.push("/");
+            router.push(`/blog/${id}`);
         } else {
-            setError("Failed to delete blog post");
+            setError("Failed to update blog post");
         }
-        setShowDeleteDialog(false);
     };
 
-    const cancelDelete = () => {
-        setShowDeleteDialog(false);
+    const handleBackToPost = () => {
+        const id = params.id as string;
+        router.push(`/blog/${id}`);
     };
 
     if (loading) {
@@ -93,11 +77,14 @@ export default function BlogDetailPage() {
                             {error || "Blog post not found"}
                         </h1>
                         <p className="text-gray-600 mb-6">
-                            The blog post you're looking for doesn't exist or has been removed.
+                            The blog post you're trying to edit doesn't exist or has been removed.
                         </p>
-                        <Button variant="primary" size="md" onClick={handleBackToList}>
+                        <button
+                            onClick={() => router.push("/")}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                        >
                             Back to Blog List
-                        </Button>
+                        </button>
                     </div>
                 </ContentContainer>
             </PageLayout>
@@ -108,26 +95,21 @@ export default function BlogDetailPage() {
         <PageLayout>
             <ContentContainer>
                 <PageHeader
-                    title={blogPost.title}
+                    title="Edit Blog Post"
                     backButton={{
-                        label: "Back to Blog List",
-                        onClick: handleBackToList
+                        label: "Back to Post",
+                        onClick: handleBackToPost
                     }}
                 />
-                <BlogDetail 
-                    post={blogPost} 
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                />
-                <ConfirmDialog
-                    isOpen={showDeleteDialog}
-                    title="Delete Blog Post"
-                    message={`Are you sure you want to delete "${blogPost.title}"? This action cannot be undone.`}
-                    confirmText="Delete"
-                    cancelText="Cancel"
-                    variant="danger"
-                    onConfirm={confirmDelete}
-                    onCancel={cancelDelete}
+                <WizardContainer 
+                    onComplete={handleComplete}
+                    initialData={{
+                        title: blogPost.title,
+                        author: blogPost.author,
+                        summary: blogPost.summary,
+                        category: blogPost.category,
+                        content: blogPost.content
+                    }}
                 />
             </ContentContainer>
         </PageLayout>

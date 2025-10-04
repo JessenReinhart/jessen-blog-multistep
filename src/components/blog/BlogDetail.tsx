@@ -1,12 +1,15 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
+import { Button } from '../ui/Button';
 import { BlogPost } from '../../types/blog';
 
 interface BlogDetailProps {
   post: BlogPost;
+  onEdit?: () => void;
+  onDelete?: () => void;
 }
 
-export const BlogDetail: React.FC<BlogDetailProps> = ({ post }) => {
+export const BlogDetail: React.FC<BlogDetailProps> = ({ post, onEdit, onDelete }) => {
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat('en-US', {
       year: 'numeric',
@@ -53,6 +56,29 @@ export const BlogDetail: React.FC<BlogDetailProps> = ({ post }) => {
         </CardHeader>
 
         <CardContent className="space-y-6">
+          {(onEdit || onDelete) && (
+            <div className="flex gap-3 justify-end border-b border-gray-200 pb-4">
+              {onEdit && (
+                <Button
+                  variant="outline"
+                  size="md"
+                  onClick={onEdit}
+                >
+                  Edit Post
+                </Button>
+              )}
+              {onDelete && (
+                <Button
+                  variant="outline"
+                  size="md"
+                  onClick={onDelete}
+                >
+                  Delete Post
+                </Button>
+              )}
+            </div>
+          )}
+
           <div className="bg-gray-50 rounded-lg p-4">
             <h3 className="font-semibold text-gray-900 mb-2">Summary</h3>
             <p className="text-gray-700 leading-relaxed">

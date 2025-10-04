@@ -1,13 +1,20 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BlogCard } from './BlogCard';
+import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { useBlogStorage } from '../../hooks/useBlogStorage';
 
 interface BlogListProps {
   onPostClick: (id: string) => void;
+  onPostEdit?: (id: string) => void;
 }
 
-export const BlogList: React.FC<BlogListProps> = ({ onPostClick }) => {
-  const { posts, isStorageAvailable } = useBlogStorage();
+export const BlogList: React.FC<BlogListProps> = ({ onPostClick, onPostEdit }) => {
+  const { posts, isStorageAvailable, deletePost } = useBlogStorage();
+  const [deleteDialog, setDeleteDialog] = useState<{ isOpen: boolean; postId: string; postTitle: string }>({
+    isOpen: false,
+    postId: '',
+    postTitle: ''
+  });
 
   if (!isStorageAvailable) {
     return (
@@ -39,6 +46,26 @@ export const BlogList: React.FC<BlogListProps> = ({ onPostClick }) => {
     );
   }
 
+  const handleDelete = (id: string) => {
+    const post = posts.find(p => p.id === id);
+    if (post) {
+      setDeleteDialog({
+        isOpen: true,
+        postId: id,
+        postTitle: post.title
+      });
+    }
+  };
+
+  const confirmDelete = () => {
+    deletePost(deleteDialog.postId);
+    setDeleteDialog({ isOpen: false, postId: '', postTitle: '' });
+  };
+
+  const cancelDelete = () => {
+    setDeleteDialog({ isOpen: false, postId: '', postTitle: '' });
+  };
+
   const sortedPosts = [...posts].sort((a, b) => 
     new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
@@ -57,9 +84,22 @@ export const BlogList: React.FC<BlogListProps> = ({ onPostClick }) => {
             key={post.id}
             post={post}
             onClick={onPostClick}
+            onEdit={onPostEdit}
+            onDelete={handleDelete}
           />
         ))}
       </div>
+      
+      <ConfirmDialog
+        isOpen={deleteDialog.isOpen}
+        title="Delete Blog Post"
+        message={`Are you sure you want to delete "${deleteDialog.postTitle}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+      />
     </div>
   );
 };

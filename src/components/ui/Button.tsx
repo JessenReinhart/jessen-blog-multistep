@@ -9,14 +9,14 @@ interface ButtonProps {
   type?: 'button' | 'submit' | 'reset';
 }
 
-export const Button: React.FC<ButtonProps> = ({
+export const Button = ({
   variant = 'primary',
   size = 'md',
   disabled = false,
   onClick,
   children,
   type = 'button'
-}) => {
+}: ButtonProps) => {
   const baseClasses = 'font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 inline-flex items-center justify-center cursor-pointer';
 
   const variantClasses = {

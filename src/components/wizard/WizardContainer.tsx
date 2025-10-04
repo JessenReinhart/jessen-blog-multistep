@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useWizardForm } from '../../hooks/useWizardForm';
 import { WizardStep } from './WizardStep';
 import { WizardNavigation } from './WizardNavigation';
@@ -8,11 +8,11 @@ import { ContentStep } from './steps/ContentStep';
 import { ReviewStep } from './steps/ReviewStep';
 import { WizardContainerProps } from '../../types/blog';
 
-export const WizardContainer: React.FC<WizardContainerProps> = ({
+export const WizardContainer = ({
   onComplete,
   initialData,
   postId
-}) => {
+}: WizardContainerProps) => {
   const {
     data,
     currentStep,
@@ -48,7 +48,6 @@ export const WizardContainer: React.FC<WizardContainerProps> = ({
     if (submitSuccess) {
       const timer = setTimeout(() => {
         onComplete(data);
-        // Only reset form for create mode, not edit mode
         if (!postId) {
           resetForm();
         }
@@ -58,19 +57,13 @@ export const WizardContainer: React.FC<WizardContainerProps> = ({
     }
   }, [submitSuccess, onComplete, data, postId, resetForm]);
 
-  const handleEditFromReview = (stepNumber: number) => {
-    goToStep(stepNumber);
-  };
-
-  const getCurrentStepTitle = () => {
+  const currentStepData = useMemo(() => {
     const step = steps.find(s => s.id === currentStep);
-    return step?.title || '';
-  };
-
-  const getCurrentStepValidation = () => {
-    const step = steps.find(s => s.id === currentStep);
-    return step?.isValid || false;
-  };
+    return {
+      title: step?.title || '',
+      isValid: step?.isValid || false
+    };
+  }, [steps, currentStep]);
 
   const renderCurrentStep = () => {
     switch (currentStep) {
@@ -102,7 +95,7 @@ export const WizardContainer: React.FC<WizardContainerProps> = ({
         return (
           <ReviewStep
             data={data}
-            onEdit={handleEditFromReview}
+            onEdit={goToStep}
           />
         );
       default:
@@ -137,8 +130,8 @@ export const WizardContainer: React.FC<WizardContainerProps> = ({
   return (
     <div className="max-w-4xl mx-auto">
       <WizardStep
-        title={getCurrentStepTitle()}
-        isValid={getCurrentStepValidation()}
+        title={currentStepData.title}
+        isValid={currentStepData.isValid}
       >
         {renderCurrentStep()}
       </WizardStep>

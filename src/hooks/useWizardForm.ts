@@ -23,8 +23,8 @@ export function useWizardForm(initialData?: Partial<WizardFormData>, postId?: st
         ...INITIAL_FORM_DATA,
         ...initialData
     }));
-    const [currentStep, setCurrentStep] = useState<number>(1);
-    const [steps, setSteps] = useState<WizardStep[]>(WIZARD_STEPS);
+    const [currentStep, setCurrentStep] = useState(1);
+    const [steps, setSteps] = useState(WIZARD_STEPS);
 
     const { errors, validateField, validateStep, clearErrors } = useFormValidation();
     const { createPost, updatePost } = useBlogStorage();
@@ -82,54 +82,42 @@ export function useWizardForm(initialData?: Partial<WizardFormData>, postId?: st
     }, [data, updateStepCompletion]);
 
     const submitForm = useCallback(() => {
-        console.log('submitForm called with data:', data);
-        console.log('postId:', postId);
-        
         const allStepsValid = WIZARD_STEPS.every((_, index) =>
             updateStepCompletion(index + 1, data)
         );
 
-        if (allStepsValid) {
-            try {
-                let result: string | boolean;
-
-                if (postId) {
-                    // Edit mode - update existing post
-                    console.log('Updating post with ID:', postId, 'and data:', data);
-                    result = updatePost(postId, data);
-                    console.log('Update result:', result);
-                    if (!result) {
-                        throw new Error('Failed to update post');
-                    }
-                } else {
-                    // Create mode - create new post
-                    console.log('Creating new post with data:', data);
-                    result = createPost(data);
-                    console.log('Create result:', result);
-                }
-
-                clearErrors();
-
-                return typeof result === 'string' ? result : postId;
-            } catch (error) {
-                console.error('Error submitting form:', error);
-                throw error;
-            }
-        } else {
+        if (!allStepsValid) {
             throw new Error('Form validation failed');
         }
+
+        try {
+            const result = postId ? updatePost(postId, data) : createPost(data);
+            
+            if (!result) {
+                throw new Error('Failed to save post');
+            }
+
+            clearErrors();
+            return typeof result === 'string' ? result : postId;
+        } catch (error) {
+            console.error('Error submitting form:', error);
+            throw error;
+        }
     }, [data, createPost, updatePost, postId, clearErrors, updateStepCompletion]);
-    const canGoNext = useMemo(() => {
-        return updateStepCompletion(currentStep, data);
-    }, [currentStep, data, updateStepCompletion]);
+    const canGoNext = useMemo(() => 
+        updateStepCompletion(currentStep, data), 
+        [currentStep, data, updateStepCompletion]
+    );
 
-    const canGoBack = useMemo(() => {
-        return currentStep > 1;
-    }, [currentStep]);
+    const canGoBack = useMemo(() => 
+        currentStep > 1, 
+        [currentStep]
+    );
 
-    const isLastStep = useMemo(() => {
-        return currentStep === WIZARD_STEPS.length;
-    }, [currentStep]);
+    const isLastStep = useMemo(() => 
+        currentStep === WIZARD_STEPS.length, 
+        [currentStep]
+    );
 
     const resetForm = useCallback(() => {
         setData(INITIAL_FORM_DATA);

@@ -12,7 +12,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 export default function EditBlogPage() {
     const params = useParams();
     const router = useRouter();
-    const { getPost, updatePost } = useBlogStorage();
+    const { getPost } = useBlogStorage();
     const [blogPost, setBlogPost] = useState<BlogPost | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -28,7 +28,7 @@ export default function EditBlogPage() {
                 } else {
                     setBlogPost(post);
                 }
-            } catch (err) {
+            } catch {
                 setError("Failed to load blog post");
             } finally {
                 setLoading(false);
@@ -38,7 +38,7 @@ export default function EditBlogPage() {
         loadBlogPost();
     }, [params.id, getPost]);
 
-    const handleComplete = (data: WizardFormData) => {
+    const handleComplete = (_data: WizardFormData) => {
         const id = params.id as string;
         // The update is already handled by the wizard's submitForm
         // Just navigate back to the post
@@ -73,7 +73,7 @@ export default function EditBlogPage() {
                             {error || "Blog post not found"}
                         </h1>
                         <p className="text-gray-600 mb-6">
-                            The blog post you're trying to edit doesn't exist or has been removed.
+                            The blog post you&apos;re trying to edit doesn&apos;t exist or has been removed.
                         </p>
                         <button
                             onClick={() => router.push("/")}

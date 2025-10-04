@@ -11,7 +11,7 @@ function checkLocalStorageAvailability(): boolean {
         localStorage.setItem(testKey, 'test');
         localStorage.removeItem(testKey);
         return true;
-    } catch (error) {
+    } catch {
         console.warn('localStorage is not available, falling back to memory storage');
         return false;
     }
@@ -64,7 +64,7 @@ function serializePosts(posts: BlogPost[]): string {
 function deserializePosts(data: string): BlogPost[] {
     try {
         const parsed = JSON.parse(data);
-        return parsed.map((post: any) => ({
+        return parsed.map((post: BlogPost & { createdAt: string }) => ({
             ...post,
             createdAt: new Date(post.createdAt)
         }));

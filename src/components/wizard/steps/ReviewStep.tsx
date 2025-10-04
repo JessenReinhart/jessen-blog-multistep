@@ -24,7 +24,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
           Review & Submit
         </Typography>
         <Typography variant="caption">
-          Please review your blog post details below. You can edit any section by clicking the "Edit" button.
+          Please review your blog post details below. You can edit any section by clicking the &quot;Edit&quot; button.
         </Typography>
       </div>
       

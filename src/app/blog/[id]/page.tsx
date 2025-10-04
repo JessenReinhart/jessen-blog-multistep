@@ -31,7 +31,7 @@ export default function BlogDetailPage() {
                 } else {
                     setBlogPost(post);
                 }
-            } catch (err) {
+            } catch {
                 setError("Failed to load blog post");
             } finally {
                 setLoading(false);
@@ -57,7 +57,7 @@ export default function BlogDetailPage() {
     const confirmDelete = () => {
         const id = params.id as string;
         const success = deletePost(id);
-        
+
         if (success) {
             router.push("/");
         } else {
@@ -93,7 +93,7 @@ export default function BlogDetailPage() {
                             {error || "Blog post not found"}
                         </h1>
                         <p className="text-gray-600 mb-6">
-                            The blog post you're looking for doesn't exist or has been removed.
+                            The blog post you&apos;re looking for doesn&apos;t exist or has been removed.
                         </p>
                         <Button variant="primary" size="md" onClick={handleBackToList}>
                             Back to Blog List
@@ -114,8 +114,8 @@ export default function BlogDetailPage() {
                         onClick: handleBackToList
                     }}
                 />
-                <BlogDetail 
-                    post={blogPost} 
+                <BlogDetail
+                    post={blogPost}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
                 />

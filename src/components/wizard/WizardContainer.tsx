@@ -62,7 +62,7 @@ export const WizardContainer = ({
     prevStep();
   };
 
-  const handleGoToStep = (step: number) => {
+  const _handleGoToStep = (step: number) => {
     setDirection(step > currentStep ? 1 : -1);
     goToStep(step);
   };

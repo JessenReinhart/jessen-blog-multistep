@@ -23,7 +23,7 @@ export const SummaryStep: React.FC<SummaryStepProps> = ({
           Blog Summary & Category
         </Typography>
         <Typography variant="caption">
-          Provide a summary and categorize your blog post to help readers understand what it's about.
+          Provide a summary and categorize your blog post to help readers understand what it&apos;s about.
         </Typography>
       </div>
       

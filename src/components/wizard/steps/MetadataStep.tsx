@@ -16,7 +16,7 @@ export const MetadataStep: React.FC<MetadataStepProps> = ({
           Blog Metadata
         </Typography>
         <Typography variant="caption">
-          Let's start with the basic information about your blog post.
+          Let&apos;s start with the basic information about your blog post.
         </Typography>
       </div>
       

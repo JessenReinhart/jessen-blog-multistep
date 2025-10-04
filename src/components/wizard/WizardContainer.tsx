@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useWizardForm } from '../../hooks/useWizardForm';
 import { WizardStep } from './WizardStep';
 import { WizardNavigation } from './WizardNavigation';
@@ -34,13 +34,22 @@ export const WizardContainer: React.FC<WizardContainerProps> = ({
     try {
       const postId = submitForm();
       setSubmitSuccess(true);
-      onComplete(data);
     } catch (error) {
       console.error('Failed to submit form:', error);
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  useEffect(() => {
+    if (submitSuccess) {
+      const timer = setTimeout(() => {
+        onComplete(data);
+      }, 2000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [submitSuccess, onComplete, data]);
 
   const handleEditFromReview = (stepNumber: number) => {
     goToStep(stepNumber);
@@ -109,32 +118,33 @@ export const WizardContainer: React.FC<WizardContainerProps> = ({
           <p className="text-green-700 mb-6">
             Your blog post has been saved and is now available in your blog list.
           </p>
+          <p className="text-green-600 text-sm">
+            Redirecting to blog list in a moment...
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <WizardStep
-          title={getCurrentStepTitle()}
-          isValid={getCurrentStepValidation()}
-        >
-          {renderCurrentStep()}
-        </WizardStep>
-        
-        <WizardNavigation
-          currentStep={currentStep}
-          totalSteps={steps.length}
-          canGoNext={canGoNext && !isSubmitting}
-          canGoBack={canGoBack && !isSubmitting}
-          onNext={nextStep}
-          onBack={prevStep}
-          onSubmit={handleSubmit}
-          isLastStep={isLastStep}
-        />
-      </div>
+    <div className="max-w-4xl mx-auto">
+      <WizardStep
+        title={getCurrentStepTitle()}
+        isValid={getCurrentStepValidation()}
+      >
+        {renderCurrentStep()}
+      </WizardStep>
+      
+      <WizardNavigation
+        currentStep={currentStep}
+        totalSteps={steps.length}
+        canGoNext={canGoNext && !isSubmitting}
+        canGoBack={canGoBack && !isSubmitting}
+        onNext={nextStep}
+        onBack={prevStep}
+        onSubmit={handleSubmit}
+        isLastStep={isLastStep}
+      />
     </div>
   );
 };

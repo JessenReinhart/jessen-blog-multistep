@@ -9,9 +9,6 @@ export const WizardStep: React.FC<WizardStepProps> = ({
   return (
     <div className="max-w-2xl mx-auto">
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          {title}
-        </h2>
         <div className={`h-1 w-full rounded-full ${isValid ? 'bg-green-200' : 'bg-gray-200'}`}>
           <div 
             className={`h-full rounded-full transition-colors duration-300 ${

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
+import { Typography } from '@/components/ui/Typography';
 import { SummaryStepProps, BlogCategory } from '@/types/blog';
 
 const categoryOptions = [
@@ -17,10 +18,12 @@ export const SummaryStep: React.FC<SummaryStepProps> = ({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Blog Summary & Category</h2>
-        <p className="text-gray-600">
+        <Typography variant="h2" className="mb-2">
+          Blog Summary & Category
+        </Typography>
+        <Typography variant="caption">
           Provide a summary and categorize your blog post to help readers understand what it's about.
-        </p>
+        </Typography>
       </div>
       
       <div className="space-y-4">

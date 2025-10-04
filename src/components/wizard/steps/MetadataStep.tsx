@@ -1,5 +1,6 @@
 import React from 'react';
 import { Input } from '@/components/ui/Input';
+import { Typography } from '@/components/ui/Typography';
 import { MetadataStepProps } from '@/types/blog';
 
 export const MetadataStep: React.FC<MetadataStepProps> = ({
@@ -10,10 +11,12 @@ export const MetadataStep: React.FC<MetadataStepProps> = ({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Blog Metadata</h2>
-        <p className="text-gray-600">
+        <Typography variant="h2" className="mb-2">
+          Blog Metadata
+        </Typography>
+        <Typography variant="caption">
           Let's start with the basic information about your blog post.
-        </p>
+        </Typography>
       </div>
       
       <div className="space-y-4">

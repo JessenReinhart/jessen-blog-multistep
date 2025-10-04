@@ -2,7 +2,7 @@ import React from 'react';
 
 interface CardProps {
   children: React.ReactNode;
-  variant?: 'default' | 'elevated' | 'outlined';
+  variant?: 'default' | 'elevated' | 'outlined' | 'minimal';
   padding?: 'none' | 'sm' | 'md' | 'lg';
   className?: string;
   onClick?: () => void;
@@ -17,12 +17,13 @@ export const Card: React.FC<CardProps> = ({
   onClick,
   hover = false
 }) => {
-  const baseClasses = 'rounded-lg transition-colors';
+  const baseClasses = 'rounded-lg transition-all duration-200';
   
   const variantClasses = {
     default: 'bg-white border border-gray-200',
-    elevated: 'bg-white shadow-md',
-    outlined: 'bg-white border-2 border-gray-300'
+    elevated: 'bg-white shadow-md hover:shadow-lg',
+    outlined: 'bg-white border-2 border-gray-300',
+    minimal: 'bg-transparent'
   };
   
   const paddingClasses = {
@@ -32,7 +33,7 @@ export const Card: React.FC<CardProps> = ({
     lg: 'p-6'
   };
   
-  const interactiveClasses = onClick ? 'cursor-pointer' : '';
+  const interactiveClasses = onClick ? 'cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2' : '';
   const hoverClasses = hover && onClick ? 'hover:bg-gray-50 hover:shadow-lg' : '';
   
   const classes = `
@@ -66,7 +67,7 @@ export const CardHeader: React.FC<CardHeaderProps> = ({
   children, 
   className = '' 
 }) => (
-  <div className={`border-b border-gray-200 pb-3 mb-3 ${className}`}>
+  <div className={`border-b border-gray-200 pb-4 mb-4 ${className}`}>
     {children}
   </div>
 );
@@ -108,7 +109,7 @@ export const CardFooter: React.FC<CardFooterProps> = ({
   children, 
   className = '' 
 }) => (
-  <div className={`border-t border-gray-200 pt-3 mt-3 ${className}`}>
+  <div className={`border-t border-gray-200 pt-4 mt-4 ${className}`}>
     {children}
   </div>
 );

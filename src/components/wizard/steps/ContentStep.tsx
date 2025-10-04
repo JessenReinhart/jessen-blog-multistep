@@ -1,5 +1,6 @@
 import React from 'react';
 import { TextArea } from '@/components/ui/TextArea';
+import { Typography } from '@/components/ui/Typography';
 import { ContentStepProps } from '@/types/blog';
 
 export const ContentStep: React.FC<ContentStepProps> = ({
@@ -10,10 +11,12 @@ export const ContentStep: React.FC<ContentStepProps> = ({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Blog Content</h2>
-        <p className="text-gray-600">
+        <Typography variant="h2" className="mb-2">
+          Blog Content
+        </Typography>
+        <Typography variant="caption">
           Write the main content of your blog post. This is where you can share your thoughts, ideas, and insights.
-        </p>
+        </Typography>
       </div>
       
       <div className="space-y-4">

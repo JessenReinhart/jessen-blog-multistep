@@ -1,5 +1,6 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
+import { Typography } from '@/components/ui/Typography';
 import { ReviewStepProps } from '@/types/blog';
 
 export const ReviewStep: React.FC<ReviewStepProps> = ({
@@ -19,10 +20,12 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Review & Submit</h2>
-        <p className="text-gray-600">
+        <Typography variant="h2" className="mb-2">
+          Review & Submit
+        </Typography>
+        <Typography variant="caption">
           Please review your blog post details below. You can edit any section by clicking the "Edit" button.
-        </p>
+        </Typography>
       </div>
       
       <div className="space-y-4">

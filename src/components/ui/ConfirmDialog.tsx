@@ -54,7 +54,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
               {cancelText}
             </Button>
             <Button
-              variant={'primary'}
+              variant={variant === 'danger' ? 'danger' : 'primary'}
               size="md"
               onClick={onConfirm}
             >

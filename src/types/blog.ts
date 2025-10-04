@@ -70,6 +70,7 @@ export interface CardProps {
 export interface WizardContainerProps {
     onComplete: (data: WizardFormData) => void;
     initialData?: Partial<WizardFormData>;
+    postId?: string;
 }
 
 export interface WizardStepProps {
@@ -162,6 +163,7 @@ export interface UseWizardFormReturn {
     canGoBack: boolean;
     isLastStep: boolean;
     submitForm: () => void;
+    resetForm: () => void;
 }
 
 export interface WizardFormState {

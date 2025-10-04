@@ -40,13 +40,9 @@ export default function EditBlogPage() {
 
     const handleComplete = (data: WizardFormData) => {
         const id = params.id as string;
-        const success = updatePost(id, data);
-        
-        if (success) {
-            router.push(`/blog/${id}`);
-        } else {
-            setError("Failed to update blog post");
-        }
+        // The update is already handled by the wizard's submitForm
+        // Just navigate back to the post
+        router.push(`/blog/${id}`);
     };
 
     const handleBackToPost = () => {
@@ -103,6 +99,7 @@ export default function EditBlogPage() {
                 />
                 <WizardContainer 
                     onComplete={handleComplete}
+                    postId={params.id as string}
                     initialData={{
                         title: blogPost.title,
                         author: blogPost.author,

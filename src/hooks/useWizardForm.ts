@@ -18,16 +18,16 @@ const WIZARD_STEPS: WizardStep[] = [
     { id: 4, title: 'Review & Submit', isValid: false, isCompleted: false }
 ];
 
-export function useWizardForm(initialData?: Partial<WizardFormData>): UseWizardFormReturn {
+export function useWizardForm(initialData?: Partial<WizardFormData>, postId?: string): UseWizardFormReturn {
     const [data, setData] = useState<WizardFormData>(() => ({
         ...INITIAL_FORM_DATA,
         ...initialData
     }));
     const [currentStep, setCurrentStep] = useState<number>(1);
     const [steps, setSteps] = useState<WizardStep[]>(WIZARD_STEPS);
-    
+
     const { errors, validateField, validateStep, clearErrors } = useFormValidation();
-    const { createPost } = useBlogStorage();
+    const { createPost, updatePost } = useBlogStorage();
 
     const updateField = useCallback((field: keyof WizardFormData, value: string) => {
         setData(prevData => {
@@ -39,21 +39,21 @@ export function useWizardForm(initialData?: Partial<WizardFormData>): UseWizardF
 
     const updateStepCompletion = useCallback((stepNumber: number, formData: WizardFormData) => {
         const isStepValid = validateStep(stepNumber, formData);
-        
-        setSteps(prevSteps => 
-            prevSteps.map(step => 
-                step.id === stepNumber 
+
+        setSteps(prevSteps =>
+            prevSteps.map(step =>
+                step.id === stepNumber
                     ? { ...step, isValid: isStepValid, isCompleted: isStepValid }
                     : step
             )
         );
-        
+
         return isStepValid;
     }, [validateStep]);
 
     const nextStep = useCallback(() => {
         const isCurrentStepValid = updateStepCompletion(currentStep, data);
-        
+
         if (isCurrentStepValid && currentStep < WIZARD_STEPS.length) {
             setCurrentStep(prev => prev + 1);
         }
@@ -74,7 +74,7 @@ export function useWizardForm(initialData?: Partial<WizardFormData>): UseWizardF
                     break;
                 }
             }
-            
+
             if (canNavigate) {
                 setCurrentStep(step);
             }
@@ -82,20 +82,35 @@ export function useWizardForm(initialData?: Partial<WizardFormData>): UseWizardF
     }, [data, updateStepCompletion]);
 
     const submitForm = useCallback(() => {
-        const allStepsValid = WIZARD_STEPS.every((_, index) => 
+        console.log('submitForm called with data:', data);
+        console.log('postId:', postId);
+        
+        const allStepsValid = WIZARD_STEPS.every((_, index) =>
             updateStepCompletion(index + 1, data)
         );
-        
+
         if (allStepsValid) {
             try {
-                const postId = createPost(data);
-                
-                setData(INITIAL_FORM_DATA);
-                setCurrentStep(1);
-                setSteps(WIZARD_STEPS);
+                let result: string | boolean;
+
+                if (postId) {
+                    // Edit mode - update existing post
+                    console.log('Updating post with ID:', postId, 'and data:', data);
+                    result = updatePost(postId, data);
+                    console.log('Update result:', result);
+                    if (!result) {
+                        throw new Error('Failed to update post');
+                    }
+                } else {
+                    // Create mode - create new post
+                    console.log('Creating new post with data:', data);
+                    result = createPost(data);
+                    console.log('Create result:', result);
+                }
+
                 clearErrors();
-                
-                return postId;
+
+                return typeof result === 'string' ? result : postId;
             } catch (error) {
                 console.error('Error submitting form:', error);
                 throw error;
@@ -103,7 +118,7 @@ export function useWizardForm(initialData?: Partial<WizardFormData>): UseWizardF
         } else {
             throw new Error('Form validation failed');
         }
-    }, [data, createPost, clearErrors, updateStepCompletion]);
+    }, [data, createPost, updatePost, postId, clearErrors, updateStepCompletion]);
     const canGoNext = useMemo(() => {
         return updateStepCompletion(currentStep, data);
     }, [currentStep, data, updateStepCompletion]);
@@ -115,6 +130,13 @@ export function useWizardForm(initialData?: Partial<WizardFormData>): UseWizardF
     const isLastStep = useMemo(() => {
         return currentStep === WIZARD_STEPS.length;
     }, [currentStep]);
+
+    const resetForm = useCallback(() => {
+        setData(INITIAL_FORM_DATA);
+        setCurrentStep(1);
+        setSteps(WIZARD_STEPS);
+        clearErrors();
+    }, [clearErrors]);
 
     return {
         data,
@@ -128,6 +150,7 @@ export function useWizardForm(initialData?: Partial<WizardFormData>): UseWizardF
         canGoNext,
         canGoBack,
         isLastStep,
-        submitForm
+        submitForm,
+        resetForm
     };
 }

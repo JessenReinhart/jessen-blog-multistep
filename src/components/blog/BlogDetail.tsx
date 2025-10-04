@@ -69,7 +69,7 @@ export const BlogDetail: React.FC<BlogDetailProps> = ({ post, onEdit, onDelete }
               )}
               {onDelete && (
                 <Button
-                  variant="outline"
+                  variant="danger"
                   size="md"
                   onClick={onDelete}
                 >

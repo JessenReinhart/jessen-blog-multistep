@@ -137,10 +137,16 @@ export function getBlogPost(id: string): BlogPost | undefined {
 }
 
 export function updateBlogPost(id: string, data: Partial<WizardFormData>): boolean {
+    console.log('updateBlogPost called with id:', id, 'and data:', data);
+    
     const posts = getAllBlogPosts();
+    console.log('Current posts:', posts);
+    
     const postIndex = posts.findIndex(post => post.id === id);
+    console.log('Post index:', postIndex);
 
     if (postIndex === -1) {
+        console.log('Post not found with id:', id);
         return false;
     }
 
@@ -153,15 +159,22 @@ export function updateBlogPost(id: string, data: Partial<WizardFormData>): boole
         }
     }
 
+    const originalPost = posts[postIndex];
+    console.log('Original post:', originalPost);
+    
     const updatedPost: BlogPost = {
-        ...posts[postIndex],
+        ...originalPost,
         ...updateData
     };
+    
+    console.log('Updated post:', updatedPost);
 
     const updatedPosts = [...posts];
     updatedPosts[postIndex] = updatedPost;
 
-    saveBlogPosts(updatedPosts);
+    console.log('Saving updated posts:', updatedPosts);
+    const saveResult = saveBlogPosts(updatedPosts);
+    console.log('Save result:', saveResult);
 
     return true;
 }

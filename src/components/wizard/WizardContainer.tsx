@@ -10,7 +10,8 @@ import { WizardContainerProps } from '../../types/blog';
 
 export const WizardContainer: React.FC<WizardContainerProps> = ({
   onComplete,
-  initialData
+  initialData,
+  postId
 }) => {
   const {
     data,
@@ -24,8 +25,9 @@ export const WizardContainer: React.FC<WizardContainerProps> = ({
     canGoNext,
     canGoBack,
     isLastStep,
-    submitForm
-  } = useWizardForm(initialData);
+    submitForm,
+    resetForm
+  } = useWizardForm(initialData, postId);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
@@ -46,11 +48,15 @@ export const WizardContainer: React.FC<WizardContainerProps> = ({
     if (submitSuccess) {
       const timer = setTimeout(() => {
         onComplete(data);
+        // Only reset form for create mode, not edit mode
+        if (!postId) {
+          resetForm();
+        }
       }, 2000);
 
       return () => clearTimeout(timer);
     }
-  }, [submitSuccess, onComplete, data]);
+  }, [submitSuccess, onComplete, data, postId, resetForm]);
 
   const handleEditFromReview = (stepNumber: number) => {
     goToStep(stepNumber);

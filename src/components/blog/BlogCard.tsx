@@ -89,7 +89,7 @@ export const BlogCard: React.FC<BlogCardProps> = ({ post, onClick, onEdit, onDel
               )}
               {onDelete && (
                 <Button
-                  variant="outline"
+                  variant="danger"
                   size="sm"
                   onClick={(e) => {
                     e.stopPropagation();

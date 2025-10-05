@@ -1,218 +1,79 @@
-import { BlogPost, WizardFormData, BlogCategory } from '@/types/blog';
+import { useBlogStore } from '@/stores/blogStore';
+import { WizardFormData } from '@/types/blog';
 
-const BLOG_POSTS_KEY = 'blog_posts';
-
-let memoryStorage: BlogPost[] = [];
-let isLocalStorageAvailable = true;
-
-function checkLocalStorageAvailability(): boolean {
+export function checkLocalStorageAvailability(): boolean {
     try {
         const testKey = '__localStorage_test__';
         localStorage.setItem(testKey, 'test');
         localStorage.removeItem(testKey);
         return true;
     } catch {
-        console.warn('localStorage is not available, falling back to memory storage');
+        console.warn('localStorage is not available');
         return false;
     }
 }
 
-function initializeStorage(): void {
-    isLocalStorageAvailable = checkLocalStorageAvailability();
+export function generateId(): string {
+    return `blog_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
 }
 
-function getFromLocalStorage(key: string): string | null {
-    if (!isLocalStorageAvailable) {
-        return null;
-    }
-
+export function getFromLocalStorage(key: string): string | null {
     try {
         return localStorage.getItem(key);
     } catch (error) {
         console.error('Error reading from localStorage:', error);
-        isLocalStorageAvailable = false;
         return null;
     }
 }
 
-function setToLocalStorage(key: string, value: string): boolean {
-    if (!isLocalStorageAvailable) {
-        return false;
-    }
-
+export function setToLocalStorage(key: string, value: string): boolean {
     try {
         localStorage.setItem(key, value);
         return true;
     } catch (error) {
         console.error('Error writing to localStorage:', error);
-        isLocalStorageAvailable = false;
         return false;
     }
 }
 
-function generateId(): string {
-    return `blog_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
-}
-
-function serializePosts(posts: BlogPost[]): string {
-    return JSON.stringify(posts.map(post => ({
-        ...post,
-        createdAt: post.createdAt.toISOString()
-    })));
-}
-
-function deserializePosts(data: string): BlogPost[] {
+export function removeFromLocalStorage(key: string): boolean {
     try {
-        const parsed = JSON.parse(data);
-        return parsed.map((post: BlogPost & { createdAt: string }) => ({
-            ...post,
-            createdAt: new Date(post.createdAt)
-        }));
+        localStorage.removeItem(key);
+        return true;
     } catch (error) {
-        console.error('Error deserializing blog posts:', error);
-        return [];
-    }
-}
-
-export function getAllBlogPosts(): BlogPost[] {
-    if (isLocalStorageAvailable === undefined) {
-        initializeStorage();
-    }
-
-    if (isLocalStorageAvailable) {
-        const data = getFromLocalStorage(BLOG_POSTS_KEY);
-        if (data) {
-            const posts = deserializePosts(data);
-            memoryStorage = posts;
-            return posts;
-        }
-    }
-
-    return memoryStorage;
-}
-
-function saveBlogPosts(posts: BlogPost[]): boolean {
-    memoryStorage = posts;
-
-    if (isLocalStorageAvailable) {
-        const serialized = serializePosts(posts);
-        return setToLocalStorage(BLOG_POSTS_KEY, serialized);
-    }
-
-    return false;
-}
-
-export function createBlogPost(data: WizardFormData): string {
-    if (!data.category) {
-        throw new Error('Category is required');
-    }
-
-    const validCategories: BlogCategory[] = ['Tech', 'Lifestyle', 'Business'];
-    if (!validCategories.includes(data.category as BlogCategory)) {
-        throw new Error('Invalid category');
-    }
-
-    const id = generateId();
-    const newPost: BlogPost = {
-        id,
-        title: data.title,
-        author: data.author,
-        summary: data.summary,
-        category: data.category as BlogCategory,
-        content: data.content,
-        createdAt: new Date()
-    };
-
-    const existingPosts = getAllBlogPosts();
-    const updatedPosts = [...existingPosts, newPost];
-
-    saveBlogPosts(updatedPosts);
-
-    return id;
-}
-
-export function getBlogPost(id: string): BlogPost | undefined {
-    const posts = getAllBlogPosts();
-    return posts.find(post => post.id === id);
-}
-
-export function updateBlogPost(id: string, data: Partial<WizardFormData>): boolean {
-    console.log('updateBlogPost called with id:', id, 'and data:', data);
-    
-    const posts = getAllBlogPosts();
-    console.log('Current posts:', posts);
-    
-    const postIndex = posts.findIndex(post => post.id === id);
-    console.log('Post index:', postIndex);
-
-    if (postIndex === -1) {
-        console.log('Post not found with id:', id);
+        console.error('Error removing from localStorage:', error);
         return false;
     }
-
-    const updateData: Partial<BlogPost> = { ...data };
-    
-    if (data.category) {
-        const validCategories: BlogCategory[] = ['Tech', 'Lifestyle', 'Business'];
-        if (validCategories.includes(data.category as BlogCategory)) {
-            updateData.category = data.category as BlogCategory;
-        }
-    }
-
-    const originalPost = posts[postIndex];
-    console.log('Original post:', originalPost);
-    
-    const updatedPost: BlogPost = {
-        ...originalPost,
-        ...updateData
-    };
-    
-    console.log('Updated post:', updatedPost);
-
-    const updatedPosts = [...posts];
-    updatedPosts[postIndex] = updatedPost;
-
-    console.log('Saving updated posts:', updatedPosts);
-    const saveResult = saveBlogPosts(updatedPosts);
-    console.log('Save result:', saveResult);
-
-    return true;
 }
 
-export function deleteBlogPost(id: string): boolean {
-    const posts = getAllBlogPosts();
-    const filteredPosts = posts.filter(post => post.id !== id);
-
-    if (filteredPosts.length === posts.length) {
-        return false;
-    }
-
-    saveBlogPosts(filteredPosts);
-
-    return true;
+export function getAllBlogPosts() {
+    return useBlogStore.getState().posts;
 }
 
-export function isStorageAvailable(): boolean {
-    return true;
+export function createBlogPost(data: WizardFormData) {
+    return useBlogStore.getState().addPost(data);
 }
 
-export function isLocalStorageWorking(): boolean {
-    if (isLocalStorageAvailable === undefined) {
-        initializeStorage();
-    }
-    return isLocalStorageAvailable;
+export function getBlogPost(id: string) {
+    return useBlogStore.getState().getPost(id);
 }
 
-export function clearAllBlogPosts(): void {
-    memoryStorage = [];
-
-    if (isLocalStorageAvailable) {
-        try {
-            localStorage.removeItem(BLOG_POSTS_KEY);
-        } catch (error) {
-            console.error('Error clearing localStorage:', error);
-        }
-    }
+export function updateBlogPost(id: string, data: Partial<WizardFormData>) {
+    return useBlogStore.getState().updatePost(id, data);
 }
 
-initializeStorage();
+export function deleteBlogPost(id: string) {
+    return useBlogStore.getState().deletePost(id);
+}
+
+export function clearAllBlogPosts() {
+    return useBlogStore.getState().clearAllPosts();
+}
+
+export function isStorageAvailable() {
+    return useBlogStore.getState().isStorageAvailable();
+}
+
+export function isLocalStorageWorking() {
+    return checkLocalStorageAvailability();
+}

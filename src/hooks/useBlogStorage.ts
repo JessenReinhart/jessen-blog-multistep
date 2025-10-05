@@ -1,91 +1,47 @@
-import { useState, useEffect, useCallback } from 'react';
-import { BlogPost, WizardFormData, UseBlogStorageReturn } from '@/types/blog';
-import {
-    getAllBlogPosts,
-    createBlogPost,
-    getBlogPost,
-    updateBlogPost,
-    deleteBlogPost,
-    isLocalStorageWorking
-} from '@/utils/storage';
+import { useBlogStore } from '@/stores/blogStore';
+import { BlogPost, UseBlogStorageReturn } from '@/types/blog';
 
 export function useBlogStorage(): UseBlogStorageReturn {
-    const [posts, setPosts] = useState<BlogPost[]>([]);
-    const [isStorageAvailable, setIsStorageAvailable] = useState(true);
+  const {
+    posts,
+    addPost,
+    getPost,
+    updatePost,
+    deletePost,
+    isStorageAvailable
+  } = useBlogStore();
 
-    useEffect(() => {
-        try {
-            const loadedPosts = getAllBlogPosts();
-            setPosts(loadedPosts);
-            setIsStorageAvailable(isLocalStorageWorking());
-        } catch (error) {
-            console.error('Error loading blog posts:', error);
-            setPosts([]);
-            setIsStorageAvailable(false);
-        }
-    }, []);
+  return {
+    posts,
+    createPost: addPost,
+    getPost,
+    getAllPosts: () => posts,
+    updatePost,
+    deletePost,
+    isStorageAvailable: isStorageAvailable()
+  };
+}
 
-    const createPost = useCallback((data: WizardFormData): string => {
-        try {
-            const postId = createBlogPost(data);
-            
-            const updatedPosts = getAllBlogPosts();
-            setPosts(updatedPosts);
-            
-            return postId;
-        } catch (error) {
-            console.error('Error creating blog post:', error);
-            throw error;
-        }
-    }, []);
+export function useBlogPost(id: string): BlogPost | undefined {
+  return useBlogStore(state => state.getPost(id));
+}
 
-    const getPost = useCallback((id: string): BlogPost | undefined => {
-        try {
-            return getBlogPost(id);
-        } catch (error) {
-            console.error('Error retrieving blog post:', error);
-            return undefined;
-        }
-    }, []);
-    const getAllPosts = useCallback((): BlogPost[] => {
-        return posts;
-    }, [posts]);
+export function useBlogPosts(): BlogPost[] {
+  return useBlogStore(state => state.posts);
+}
 
-    const updatePost = useCallback((id: string, data: Partial<WizardFormData>): boolean => {
-        try {
-            const success = updateBlogPost(id, data);
-            if (success) {
-                const updatedPosts = getAllBlogPosts();
-                setPosts(updatedPosts);
-            }
-            return success;
-        } catch (error) {
-            console.error('Error updating blog post:', error);
-            return false;
-        }
-    }, []);
+export function useBlogActions() {
+  const {
+    addPost,
+    updatePost,
+    deletePost,
+    clearAllPosts
+  } = useBlogStore();
 
-    const deletePost = useCallback((id: string): boolean => {
-        try {
-            const success = deleteBlogPost(id);
-            if (success) {
-                const updatedPosts = getAllBlogPosts();
-                setPosts(updatedPosts);
-            }
-            return success;
-        } catch (error) {
-            console.error('Error deleting blog post:', error);
-            return false;
-        }
-    }, []);
-
-    return {
-        posts,
-        createPost,
-        getPost,
-        getAllPosts,
-        updatePost,
-        deletePost,
-        isStorageAvailable
-    };
+  return {
+    createPost: addPost,
+    updatePost,
+    deletePost,
+    clearAllPosts
+  };
 }

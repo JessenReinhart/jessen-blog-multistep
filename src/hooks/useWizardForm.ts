@@ -1,7 +1,11 @@
-import { useState, useCallback, useMemo } from 'react';
-import { WizardFormData, WizardStep, UseWizardFormReturn, BlogCategory } from '@/types/blog';
-import { validateField, validateStep } from '@/utils/validation';
+import { useCallback } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { WizardFormData, BlogCategory, UseWizardFormReturn } from '@/types/blog';
+import { wizardFormSchema, WizardFormSchemaType } from '@/utils/wizardFormSchema';
+import { useStepNavigation } from './useStepNavigation';
 import { useBlogStorage } from './useBlogStorage';
+import { validateStepsUpTo } from '@/utils/stepValidation';
 
 const INITIAL_FORM_DATA: WizardFormData = {
     title: '',
@@ -11,159 +15,55 @@ const INITIAL_FORM_DATA: WizardFormData = {
     content: ''
 };
 
-const WIZARD_STEPS: WizardStep[] = [
-    { id: 1, title: 'Blog Metadata', isValid: false, isCompleted: false },
-    { id: 2, title: 'Blog Summary & Category', isValid: false, isCompleted: false },
-    { id: 3, title: 'Blog Content', isValid: false, isCompleted: false },
-    { id: 4, title: 'Review & Submit', isValid: false, isCompleted: false }
-];
-
 export function useWizardForm(initialData?: Partial<WizardFormData>, postId?: string): UseWizardFormReturn {
-    const [data, setData] = useState<WizardFormData>(() => ({
-        ...INITIAL_FORM_DATA,
-        ...initialData
-    }));
-    const [currentStep, setCurrentStep] = useState(1);
-    const [steps, setSteps] = useState(WIZARD_STEPS);
-    const [errors, setErrors] = useState<Record<string, string>>({});
+    const form = useForm<WizardFormSchemaType>({
+        resolver: zodResolver(wizardFormSchema),
+        defaultValues: {
+            ...INITIAL_FORM_DATA,
+            ...initialData
+        },
+        mode: 'onBlur'
+    });
+
+    const stepNavigation = useStepNavigation({ form });
 
     const { createPost, updatePost } = useBlogStorage();
 
-    const updateField = useCallback((field: keyof WizardFormData, value: string) => {
-        setData(prevData => {
-            const newData = { ...prevData, [field]: value };
-            if (errors[field]) {
-                const error = validateField(field, value);
-                setErrors(prev => {
-                    const newErrors = { ...prev };
-                    if (error) {
-                        newErrors[field] = error;
-                    } else {
-                        delete newErrors[field];
-                    }
-                    return newErrors;
-                });
-            }
-            return newData;
-        });
-    }, [errors]);
+    const submit = useCallback(async (): Promise<string> => {
+        const isFormValid = await form.trigger();
+        const allStepsValid = validateStepsUpTo(4, form);
 
-    const updateStepCompletion = useCallback((stepNumber: number, formData: WizardFormData) => {
-        const isStepValid = validateStep(stepNumber, formData);
-
-        setSteps(prevSteps =>
-            prevSteps.map(step =>
-                step.id === stepNumber
-                    ? { ...step, isValid: isStepValid, isCompleted: isStepValid }
-                    : step
-            )
-        );
-
-        return isStepValid;
-    }, []);
-
-    const nextStep = useCallback(() => {
-        const isCurrentStepValid = updateStepCompletion(currentStep, data);
-
-        if (isCurrentStepValid && currentStep < WIZARD_STEPS.length) {
-            setCurrentStep(prev => prev + 1);
-        }
-    }, [currentStep, data, updateStepCompletion]);
-
-    const prevStep = useCallback(() => {
-        if (currentStep > 1) {
-            setCurrentStep(prev => prev - 1);
-        }
-    }, [currentStep]);
-
-    const goToStep = useCallback((step: number) => {
-        if (step >= 1 && step <= WIZARD_STEPS.length) {
-            let canNavigate = true;
-            for (let i = 1; i < step; i++) {
-                if (!validateStep(i, data)) {
-                    canNavigate = false;
-                    break;
-                }
-            }
-
-            if (canNavigate) {
-                setCurrentStep(step);
-            }
-        }
-    }, [data]);
-
-    const submitForm = useCallback(() => {
-        const allStepsValid = WIZARD_STEPS.every((_, index) =>
-            validateStep(index + 1, data)
-        );
-
-        if (!allStepsValid) {
+        if (!isFormValid || !allStepsValid) {
             throw new Error('Form validation failed');
         }
 
         try {
-            const result = postId ? updatePost(postId, data) : createPost(data);
-            
+            const formData = form.getValues();
+            const result = postId ? updatePost(postId, formData) : createPost(formData);
+
             if (!result) {
                 throw new Error('Failed to save post');
             }
 
-            setErrors({});
-            return typeof result === 'string' ? result : postId;
+            return typeof result === 'string' ? result : postId!;
         } catch (error) {
             console.error('Error submitting form:', error);
             throw error;
         }
-    }, [data, createPost, updatePost, postId]);
-    const canGoNext = useMemo(() => 
-        validateStep(currentStep, data), 
-        [currentStep, data]);
-
-    const canGoBack = useMemo(() => 
-        currentStep > 1, 
-        [currentStep]
-    );
-
-    const isLastStep = useMemo(() => 
-        currentStep === WIZARD_STEPS.length, 
-        [currentStep]
-    );
-
-    const resetForm = useCallback(() => {
-        setData(INITIAL_FORM_DATA);
-        setCurrentStep(1);
-        setSteps(WIZARD_STEPS);
-        setErrors({});
-    }, []);
-
-    const validateFieldOnBlurHandler = useCallback((field: keyof WizardFormData, value: string) => {
-        const error = validateField(field, value);
-        setErrors(prev => {
-            const newErrors = { ...prev };
-            if (error) {
-                newErrors[field] = error;
-            } else {
-                delete newErrors[field];
-            }
-            return newErrors;
-        });
-        return error;
-    }, []);
+    }, [form, createPost, updatePost, postId]);
 
     return {
-        data,
-        currentStep,
-        steps,
-        errors,
-        updateField,
-        validateFieldOnBlur: validateFieldOnBlurHandler,
-        nextStep,
-        prevStep,
-        goToStep,
-        canGoNext,
-        canGoBack,
-        isLastStep,
-        submitForm,
-        resetForm
+        form,
+        step: {
+            current: stepNavigation.currentStep,
+            steps: stepNavigation.steps,
+            next: stepNavigation.next,
+            previous: stepNavigation.previous,
+            goTo: stepNavigation.goTo,
+            canGoNext: stepNavigation.canGoNext,
+            canGoBack: stepNavigation.canGoBack,
+            isLastStep: stepNavigation.isLastStep
+        },
+        submit
     };
 }

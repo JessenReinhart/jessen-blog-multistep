@@ -19,21 +19,12 @@ export const WizardContainer = ({
   postId
 }: WizardContainerProps) => {
   const {
-    data,
-    currentStep,
-    steps,
-    errors,
-    updateField,
-    validateFieldOnBlur,
-    nextStep,
-    prevStep,
-    goToStep,
-    canGoNext,
-    canGoBack,
-    isLastStep,
-    submitForm,
-    resetForm
+    form,
+    step,
+    submit
   } = useWizardForm(initialData, postId);
+
+  const data = form.watch();
 
   const { getVariants } = useAnimationConfig();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -43,7 +34,7 @@ export const WizardContainer = ({
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      submitForm();
+      await submit();
       setSubmitSuccess(true);
     } catch (error) {
       console.error('Failed to submit form:', error);
@@ -54,17 +45,17 @@ export const WizardContainer = ({
 
   const handleNext = () => {
     setDirection(1);
-    nextStep();
+    step.next();
   };
 
   const handlePrev = () => {
     setDirection(-1);
-    prevStep();
+    step.previous();
   };
 
-  const _handleGoToStep = (step: number) => {
-    setDirection(step > currentStep ? 1 : -1);
-    goToStep(step);
+  const _handleGoToStep = (stepNumber: number) => {
+    setDirection(stepNumber > step.current ? 1 : -1);
+    step.goTo(stepNumber);
   };
 
   useEffect(() => {
@@ -72,56 +63,35 @@ export const WizardContainer = ({
       const timer = setTimeout(() => {
         onComplete(data);
         if (!postId) {
-          resetForm();
+          form.reset();
         }
       }, 2000);
 
       return () => clearTimeout(timer);
     }
-  }, [submitSuccess, onComplete, data, postId, resetForm]);
+  }, [submitSuccess, onComplete, data, postId, form]);
 
   const currentStepData = useMemo(() => {
-    const step = steps.find(s => s.id === currentStep);
+    const currentStepInfo = step.steps.find(s => s.id === step.current);
     return {
-      title: step?.title || '',
-      isValid: step?.isValid || false
+      title: currentStepInfo?.title || '',
+      isValid: currentStepInfo?.isValid || false
     };
-  }, [steps, currentStep]);
+  }, [step]);
 
   const renderCurrentStep = () => {
-    switch (currentStep) {
+    switch (step.current) {
       case 1:
-        return (
-          <MetadataStep
-            data={{ title: data.title, author: data.author }}
-            onChange={updateField}
-            onBlur={validateFieldOnBlur}
-            errors={errors}
-          />
-        );
+        return <MetadataStep form={form} />;
       case 2:
-        return (
-          <SummaryStep
-            data={{ summary: data.summary, category: data.category }}
-            onChange={updateField}
-            onBlur={validateFieldOnBlur}
-            errors={errors}
-          />
-        );
+        return <SummaryStep form={form} />;
       case 3:
-        return (
-          <ContentStep
-            data={{ content: data.content }}
-            onChange={updateField}
-            onBlur={validateFieldOnBlur}
-            errors={errors}
-          />
-        );
+        return <ContentStep form={form} />;
       case 4:
         return (
           <ReviewStep
             data={data}
-            onEdit={goToStep}
+            onEdit={step.goTo}
           />
         );
       default:
@@ -167,7 +137,7 @@ export const WizardContainer = ({
     <div className="max-w-4xl mx-auto">
       <AnimatePresence mode="wait" custom={direction}>
         <motion.div
-          key={currentStep}
+          key={step.current}
           custom={direction}
           variants={getVariants(stepTransitions)}
           initial="initial"
@@ -184,14 +154,14 @@ export const WizardContainer = ({
       </AnimatePresence>
 
       <WizardNavigation
-        currentStep={currentStep}
-        totalSteps={steps.length}
-        canGoNext={canGoNext && !isSubmitting}
-        canGoBack={canGoBack && !isSubmitting}
+        currentStep={step.current}
+        totalSteps={step.steps.length}
+        canGoNext={step.canGoNext && !isSubmitting}
+        canGoBack={step.canGoBack && !isSubmitting}
         onNext={handleNext}
         onBack={handlePrev}
         onSubmit={handleSubmit}
-        isLastStep={isLastStep}
+        isLastStep={step.isLastStep}
       />
     </div>
   );

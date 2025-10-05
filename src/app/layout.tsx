@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import { AnimationProvider } from "../contexts/AnimationContext";
+import { NavigationProvider } from "../contexts/NavigationContext";
 import { AnimationErrorBoundary } from "../components/AnimationErrorBoundary";
+import { NavigationOverlay } from "../components/ui/NavigationOverlay";
+import { PageTransition } from "../components/layout/PageTransition";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -32,21 +35,26 @@ export default function RootLayout({
         suppressHydrationWarning={true}
       >
         <AnimationErrorBoundary>
-          <AnimationProvider>
-            <header className="bg-white shadow-sm border-b border-gray-200">
-              <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between items-center h-16">
-                  <Link
-                    href="/"
-                    className="text-xl font-bold text-gray-900 hover:text-blue-600 transition-colors"
-                  >
-                    Blog Wizard
-                  </Link>
-                </div>
-              </nav>
-            </header>
-            {children}
-          </AnimationProvider>
+          <NavigationProvider>
+            <AnimationProvider>
+              <header className="bg-white shadow-sm border-b border-gray-200">
+                <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                  <div className="flex justify-between items-center h-16">
+                    <Link
+                      href="/"
+                      className="text-xl font-bold text-gray-900 hover:text-blue-600 transition-colors"
+                    >
+                      Blog Wizard
+                    </Link>
+                  </div>
+                </nav>
+              </header>
+              <PageTransition>
+                {children}
+              </PageTransition>
+              <NavigationOverlay />
+            </AnimationProvider>
+          </NavigationProvider>
         </AnimationErrorBoundary>
       </body>
     </html>

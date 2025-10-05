@@ -3,12 +3,10 @@ import { Input } from '@/components/ui/Input';
 import { Typography } from '@/components/ui/Typography';
 import { MetadataStepProps } from '@/types/blog';
 
-export const MetadataStep: React.FC<MetadataStepProps> = ({
-  data,
-  onChange,
-  onBlur,
-  errors
-}) => {
+export const MetadataStep: React.FC<MetadataStepProps> = ({ form }) => {
+  const { formState: { errors }, watch } = form;
+  const data = watch();
+
   return (
     <div className="space-y-6">
       <div>
@@ -23,10 +21,10 @@ export const MetadataStep: React.FC<MetadataStepProps> = ({
       <div className="space-y-4">
         <Input
           label="Blog Title"
-          value={data.title}
-          onChange={(value) => onChange('title', value)}
-          onBlur={(value) => onBlur('title', value)}
-          error={errors.title}
+          value={data.title || ''}
+          onChange={(value) => form.setValue('title', value)}
+          onBlur={() => form.trigger('title')}
+          error={errors.title?.message}
           required
           placeholder="Enter your blog post title"
           id="blog-title"
@@ -34,10 +32,10 @@ export const MetadataStep: React.FC<MetadataStepProps> = ({
         
         <Input
           label="Author Name"
-          value={data.author}
-          onChange={(value) => onChange('author', value)}
-          onBlur={(value) => onBlur('author', value)}
-          error={errors.author}
+          value={data.author || ''}
+          onChange={(value) => form.setValue('author', value)}
+          onBlur={() => form.trigger('author')}
+          error={errors.author?.message}
           required
           placeholder="Enter the author's name"
           id="author-name"

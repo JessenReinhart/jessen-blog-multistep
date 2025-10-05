@@ -1,3 +1,5 @@
+import { UseFormReturn } from "react-hook-form";
+
 export interface BlogPost {
     id: string;
     title: string;
@@ -94,24 +96,15 @@ export interface WizardNavigationProps {
 }
 
 export interface MetadataStepProps {
-    data: Pick<WizardFormData, 'title' | 'author'>;
-    onChange: (field: keyof WizardFormData, value: string) => void;
-    onBlur: (field: keyof WizardFormData, value: string) => string;
-    errors: Record<string, string>;
+    form: UseFormReturn<WizardFormData>;
 }
 
 export interface SummaryStepProps {
-    data: Pick<WizardFormData, 'summary' | 'category'>;
-    onChange: (field: keyof WizardFormData, value: string) => void;
-    onBlur: (field: keyof WizardFormData, value: string) => string;
-    errors: Record<string, string>;
+    form: UseFormReturn<WizardFormData>;
 }
 
 export interface ContentStepProps {
-    data: Pick<WizardFormData, 'content'>;
-    onChange: (field: keyof WizardFormData, value: string) => void;
-    onBlur: (field: keyof WizardFormData, value: string) => string;
-    errors: Record<string, string>;
+    form: UseFormReturn<WizardFormData>;
 }
 
 export interface ReviewStepProps {
@@ -152,25 +145,17 @@ export interface UseBlogStorageReturn {
 
 
 export interface UseWizardFormReturn {
-    data: WizardFormData;
-    currentStep: number;
-    steps: WizardStep[];
-    errors: Record<string, string>;
-    updateField: (field: keyof WizardFormData, value: string) => void;
-    validateFieldOnBlur: (field: keyof WizardFormData, value: string) => string;
-    nextStep: () => void;
-    prevStep: () => void;
-    goToStep: (step: number) => void;
-    canGoNext: boolean;
-    canGoBack: boolean;
-    isLastStep: boolean;
-    submitForm: () => void;
-    resetForm: () => void;
+    form: UseFormReturn<WizardFormData>;
+    step: {
+        current: number;
+        steps: WizardStep[];
+        next: () => void;
+        previous: () => void;
+        goTo: (step: number) => void;
+        canGoNext: boolean;
+        canGoBack: boolean;
+        isLastStep: boolean;
+    };
+    submit: () => Promise<string>;
 }
 
-export interface WizardFormState {
-    data: WizardFormData;
-    currentStep: number;
-    steps: WizardStep[];
-    errors: Record<string, string>;
-}

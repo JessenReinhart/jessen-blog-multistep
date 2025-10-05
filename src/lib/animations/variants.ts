@@ -4,7 +4,7 @@ import { createTransition, createStaggerTransition } from './utils';
 export const fadeInOut: Variants = {
   initial: { opacity: 0 },
   animate: { opacity: 1, transition: createTransition() },
-  exit: { opacity: 0, transition: createTransition('fast') },
+  exit: { opacity: 0, transition: createTransition('normal') },
 };
 
 export const slideInOut: Variants = {
@@ -77,4 +77,11 @@ export const staggerItem: Variants = {
 export const progressBarVariants: Variants = {
   initial: { scaleX: 0, originX: 0 },
   animate: { scaleX: 1, originX: 0, transition: createTransition('slow') },
+};
+
+export const pageTransition: Variants = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1, transition: createTransition() },
+  fadeOut: { opacity: 0, transition: createTransition('fast') },
+  exit: { opacity: 0, transition: createTransition('fast') },
 };

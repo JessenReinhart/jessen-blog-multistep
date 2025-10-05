@@ -10,12 +10,10 @@ const categoryOptions = [
   { value: 'Business', label: 'Business' }
 ];
 
-export const SummaryStep: React.FC<SummaryStepProps> = ({
-  data,
-  onChange,
-  onBlur,
-  errors
-}) => {
+export const SummaryStep: React.FC<SummaryStepProps> = ({ form }) => {
+  const { formState: { errors }, watch } = form;
+  const data = watch();
+
   return (
     <div className="space-y-6">
       <div>
@@ -30,10 +28,10 @@ export const SummaryStep: React.FC<SummaryStepProps> = ({
       <div className="space-y-4">
         <Input
           label="Blog Summary"
-          value={data.summary}
-          onChange={(value) => onChange('summary', value)}
-          onBlur={(value) => onBlur('summary', value)}
-          error={errors.summary}
+          value={data.summary || ''}
+          onChange={(value) => form.setValue('summary', value)}
+          onBlur={() => form.trigger('summary')}
+          error={errors.summary?.message}
           required
           placeholder="Write a brief summary of your blog post"
           id="blog-summary"
@@ -41,13 +39,12 @@ export const SummaryStep: React.FC<SummaryStepProps> = ({
         
         <Select
           label="Blog Category"
-          value={data.category}
-          onChange={(value) => onChange('category', value as BlogCategory)}
-          onBlur={(value) => onBlur('category', value as BlogCategory)}
+          value={data.category || ''}
+          onChange={(value) => form.setValue('category', value as BlogCategory)}
+          onBlur={() => form.trigger('category')}
           options={categoryOptions}
-          error={errors.category}
+          error={errors.category?.message}
           required
-          placeholder="Select a category for your blog post"
           id="blog-category"
         />
       </div>
